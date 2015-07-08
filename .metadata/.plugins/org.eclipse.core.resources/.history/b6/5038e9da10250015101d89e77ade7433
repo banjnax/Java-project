@@ -1,0 +1,6 @@
+package com.banjo;
+
+public class TrafficLight {
+	boolean status=false;
+	static int inteval=10;
+}

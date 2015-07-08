@@ -1,0 +1,32 @@
+package com.banjo;
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+public class Road {
+	ArrayList<Line> ls =new ArrayList<Line>();
+	public Road(){
+		ls.add(
+				new Line(new Point(200,100),new Point(400,100))
+				);
+		for(int i=0;i<10;i++){
+			ls.add(
+					new Line(new Point(250,100+20*i),new Point(350,100+20*i))
+					);
+		}
+		ls.add(
+				new Line(new Point(200,320),new Point(400,320))
+				);
+	}
+	public void paint(Graphics g){
+		Color c= g.getColor();
+		g.setColor(Color.gray);
+		
+		Iterator<Line> it = ls.iterator();
+		while(it.hasNext()) it.next().paint(g);
+		
+		g.setColor(c);
+	}
+}

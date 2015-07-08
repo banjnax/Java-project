@@ -1,0 +1,74 @@
+package com.banjo;
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.util.Random;
+
+public class Person {
+	int loc_x;//location of a person
+	int loc_y;//location of a person
+	int level=0;//the level of a person stands, different level has different strategy
+	double pro_foll;//the probability of following other people
+	double pro_ch;//the probability of change his way to cross the street
+	int deadline;
+	Street st;
+	boolean cross=false;
+	int step;
+	public Person(Street st,int x,int y,double foll,double ch){
+		Random r = new Random();
+		this.loc_x=x;
+		this.loc_y=y;
+		this.pro_foll=foll;
+		this.pro_ch=ch;
+		this.st = st;
+		this.deadline = r.nextInt(st.pn/2);
+		this.step = r.nextInt(5)+1;
+	}
+	public void move(){
+		switch(level){
+			case 0:move_0();break;
+			case 1:move_1();break;
+			case 2:move_2();break;
+		}
+	}
+	public void move_0(){
+		if(!cross&&!st.tl.status){
+			if(st.countP>=deadline) {
+				loc_y = loc_y -5;
+				cross = true;
+				st.countP++;
+			}
+			else{
+				if(new Random().nextDouble()<pro_foll) {
+					loc_y = loc_y -5;
+					cross = true;
+					st.countP++;
+				}
+				else{
+					loc_y = loc_y -5;
+					if(loc_y<320) loc_y = 320;
+					if(new Random().nextBoolean()) loc_x+=5;
+					else loc_x-=5;
+				}
+			}
+		}
+		else{
+			loc_y = loc_y -step;
+			if(new Random().nextBoolean()) loc_x+=5;
+			else loc_x-=5;
+		}
+	}
+	public void move_1(){
+		
+	}
+	public void move_2(){
+		
+	}
+	public void paint(Graphics g){
+		Color c = g.getColor();
+		g.setColor(Color.GREEN);
+		g.drawRect(loc_x-5, loc_y-5, 10, 10);
+		g.setColor(c);
+	}
+
+}

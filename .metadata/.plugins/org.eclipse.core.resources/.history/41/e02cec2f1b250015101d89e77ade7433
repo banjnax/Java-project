@@ -1,0 +1,51 @@
+package com.banjo;
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.util.Random;
+
+public class Person {
+	int loc_x;//location of a person
+	int loc_y;//location of a person
+	int level=0;//the level of a person stands, different level has different strategy
+	double pro_foll;//the probability of following other people
+	double pro_ch;//the probability of change his way to cross the street
+	int deadline;
+	Street st;
+	public Person(Street st,int x,int y,double foll,double ch){
+		Random r = new Random();
+		this.loc_x=x;
+		this.loc_y=y;
+		this.pro_foll=foll;
+		this.pro_ch=ch;
+		this.deadline = r.nextInt(10);
+		this.st = st;
+	}
+	public void move(){
+		switch(level){
+			case 0:move_0();break;
+			case 1:move_1();break;
+			case 2:move_2();break;
+		}
+	}
+	public void move_0(){
+		Random r = new Random();
+		if(st.countP>=deadline) loc_y = loc_y +5;
+		else{
+			
+		}
+	}
+	public void move_1(){
+		
+	}
+	public void move_2(){
+		
+	}
+	public void paint(Graphics g){
+		Color c = g.getColor();
+		g.setColor(Color.GREEN);
+		g.drawRect(loc_x-5, loc_y-5, 10, 10);
+		g.setColor(c);
+	}
+
+}

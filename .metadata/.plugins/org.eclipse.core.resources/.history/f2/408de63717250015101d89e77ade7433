@@ -1,0 +1,10 @@
+package com.banjo;
+
+import java.util.ArrayList;
+
+public class Road {
+	ArrayList<line> ls =new ArrayList<line>();
+	public Road(){
+		
+	}
+}
