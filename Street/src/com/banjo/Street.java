@@ -20,11 +20,11 @@ public class Street extends JFrame{
 	Image offScreenImage = null;
 	Graphics gImage = null;
 	ArrayList<Person> ps = new ArrayList<Person>();
-	TrafficLight tl = new TrafficLight(false,410,175,new Random().nextInt(10)+1);
-	TrafficLight tl2 = new TrafficLight(false,810,175,new Random().nextInt(10)+1);
+	TrafficLight tl = new TrafficLight(false,410,175,new Random().nextInt(20)+1);
+	TrafficLight tl2 = new TrafficLight(false,810,175,60);
 	Road road = new Road();
 	int countP=0;
-	static int pn = 50;
+	static int pn = 100;
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		new Street().launch();

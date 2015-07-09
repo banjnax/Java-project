@@ -62,7 +62,7 @@ public class Person {
 							//then configure next level
 							step+=2;
 							deadline=0;
-							pro_foll+=new Random().nextDouble();
+							//pro_foll+=new Random().nextDouble();
 							if(pro_foll>1) pro_foll=1;
 							loc_x+=step;
 						}
@@ -77,6 +77,7 @@ public class Person {
 			}
 			else{//you have bear your mind to break the rule and cross the street
 				loc_y = loc_y -step;
+				//------------you are going to the destination horizontally-------------------
 				if(loc_y<190) level=2;
 				if(new Random().nextBoolean()) loc_x+=5;
 				else loc_x-=5;
@@ -86,8 +87,8 @@ public class Person {
 	}
 	public void move_1(){//you choose cross the street through other road
 			if(loc_x>655){//-----------------------------------------mark--------------------------------------------------
-				if(st.tl2.status){//Firstly, look at the traffic light ,if it's green.then go though
-					loc_y = loc_y -new Random().nextInt(step)-5;
+				if(st.tl2.status&&level!=2){//Firstly, look at the traffic light ,if it's green.then go though
+					loc_y = loc_y -new Random().nextInt(step)-2;
 					if(loc_y<420&&!cross){
 						cross=true;
 					}
@@ -97,18 +98,17 @@ public class Person {
 							if(new Random().nextDouble()<pro_foll) {//you did a lot of  struggle in your brain
 								loc_y = loc_y -step;
 								cross = true;
-								st.countP++;
 							}
 							else{//you overcome your struggle and choose to be obey the rule
 									loc_y = loc_y -step;
 									if(loc_y<420) loc_y = 420;
-									if(new Random().nextBoolean()) loc_x+=5;
-									else loc_x-=5;
+									if(new Random().nextBoolean()) loc_x+=step;
+									else loc_x-=step;
 							}
 						}
 					else{
 						loc_y-=step;
-						if(loc_y<190)  {
+						if(loc_y<200)  {
 							level=2;
 							bingo = true;
 						}
@@ -121,8 +121,8 @@ public class Person {
 	}
 	public void crossOver(){
 		if(bingo){
-			if(new Random().nextBoolean()) loc_x+=5;
-			else loc_x-=5;
+			if(new Random().nextBoolean()) loc_x+=step;
+			else loc_x-=step;
 		}
 		else{
 			loc_x = loc_x+step+3;
