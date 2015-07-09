@@ -1,0 +1,7 @@
+import eduni.simjava.*;
+public class Source extends Sim_entity{
+	public Source(String name){
+		super(name);
+		
+	}
+}

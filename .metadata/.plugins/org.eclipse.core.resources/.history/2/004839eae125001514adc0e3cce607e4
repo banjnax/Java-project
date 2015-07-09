@@ -1,0 +1,10 @@
+import eduni.simjava.*;
+public class Source extends Sim_entity{
+	private Sim_port out;
+	
+	public Source(String name){
+		super(name);
+		out = new Sim_port("Out");
+		add_port(out);
+	}
+}

@@ -1,0 +1,14 @@
+package com.banjo.simtest;
+import eduni.simjava.*;
+
+public class Disk extends Sim_entity{
+	private Sim_port in;
+	private Double delay;
+	
+	public Disk(String name,double delay){
+		super(name);
+		this.delay = delay;
+		in = new Sim_port("In");
+		add_port(in);
+	}
+}
