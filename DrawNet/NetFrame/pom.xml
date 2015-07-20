@@ -38,6 +38,18 @@
  					<target>1.7</target>
  				</configuration>
   		</plugin>
+  		<plugin>  
+               <groupId>org.apache.maven.plugins</groupId>  
+               <artifactId>maven-jar-plugin</artifactId>  
+               <configuration>  
+                   <archive>  
+                       <manifest>  
+                           <addClasspath>true</addClasspath>  
+                           <mainClass>com.banjo.net.NetFrame.DrawNetwork</mainClass>  
+                       </manifest>  
+                   </archive>  
+               </configuration>  
+           </plugin>   
   	</plugins>
   </build>
 </project>

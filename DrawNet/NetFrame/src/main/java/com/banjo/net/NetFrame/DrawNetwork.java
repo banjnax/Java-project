@@ -14,7 +14,7 @@ import javax.swing.*;
 import com.banjo.net.BaseModules.*;
 
 
-public class DrawNetwork extends JFrame{
+public class DrawNetwork extends JFrame implements ActionListener{
 
 	private static final long serialVersionUID = 1L;
 	private static int G_WIDTH = 600;
@@ -49,22 +49,8 @@ public class DrawNetwork extends JFrame{
 		operation.setLayout(new GridLayout(4, 1));
 		
 
-		link.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				int label_start = Integer.parseInt(start.getText())-1;
-				int label_end = Integer.parseInt(end.getText())-1;
-				int w = Integer.parseInt(weight.getText());
-				
-				Line l = new Line(agents.ags.get(label_start).self,agents.ags.get(label_end).self);
-				l.label_start = label_start;
-				l.label_end = label_end;
-				l.weight = w;
-				edges.ls.add(l);
-				repaint();
-			}
-		});
+		link.addActionListener(this);
+		
 		this.add(palette,BorderLayout.CENTER);
 		operation.add(start);
 		operation.add(end);
@@ -116,6 +102,23 @@ public class DrawNetwork extends JFrame{
 		
 		this.setBackground(Color.white);
         g.drawImage(offScreenImage, 0, 0, null);     
+	}
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		if(e.getSource()==link){
+			int label_start = Integer.parseInt(start.getText())-1;
+			int label_end = Integer.parseInt(end.getText())-1;
+			int w = Integer.parseInt(weight.getText());
+			
+			Line l = new Line(agents.ags.get(label_start).self,agents.ags.get(label_end).self);
+			l.label_start = label_start;
+			l.label_end = label_end;
+			l.weight = w;
+			edges.ls.add(l);
+			repaint();
+		}
+
 	}
 
 
