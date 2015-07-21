@@ -1,6 +1,7 @@
 package com.banjo.net.NetFrame;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -18,6 +19,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
 
 import com.banjo.net.BaseModules.Agent;
 import com.banjo.net.BaseModules.Agents;
@@ -45,7 +50,7 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 	JTextField end = new JTextField(2);
 	JTextField weight = new JTextField(2);
 	JPanel palette = new JPanel();
-	JTextArea history = new JTextArea(5,10);
+	JTextPane his = new JTextPane();
 	JButton clear = new JButton("Clear History");
 	
 	JLabel s = new JLabel("Start point:");
@@ -53,7 +58,7 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 	JLabel w = new JLabel("Weight:");
 	JLabel h = new JLabel("History:");
 	JButton link = new JButton("Link");
-	JScrollPane jcp = new JScrollPane(history);
+	JScrollPane jcp = new JScrollPane(his);
 	public static void main(String[] args) {
 		new DrawNetwork().launch();
 	}
@@ -65,6 +70,14 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 		this.setLayout(new GridBagLayout());
 		this.setResizable(false);
 		
+        Style def = his.getStyledDocument().addStyle(null, null);//this style define a normal style
+        StyleConstants.setFontFamily(def, "verdana");
+        StyleConstants.setFontSize(def, 10);
+        Style normal = his.addStyle("normal", def);//name "def" to be normal
+        
+        Style s1 = his.addStyle("red", normal);//"red" style based on the "normal" style ,add color attribute to the "red" style
+        StyleConstants.setForeground(s1, Color.RED);
+        his.setParagraphAttributes(normal, true);
 		
 		
 		palette.setBackground(Color.white);
@@ -78,8 +91,8 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 		end.setHorizontalAlignment(JTextField.CENTER);
 		weight.setHorizontalAlignment(JTextField.CENTER);
 		jcp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		history.setLineWrap(true);//Auto Wrap
-		history.setWrapStyleWord(true);//Do not split the word
+		his.setPreferredSize(new Dimension(100,100));
+		
 		
 		link.addActionListener(this);
 		clear.addActionListener(this);
@@ -172,7 +185,13 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 			int label_end = Integer.parseInt(end.getText())-1;
 			int w = Integer.parseInt(weight.getText());
 			if(label_start > count-1 || label_end > count-1|| label_start < 0|| label_end < 0){
-				history.append("ERROR:<---Beyond Arrange--->");
+				 try {
+					his.getDocument().insertString(his.getDocument().getLength(),
+					          "ERROR:<---Beyond Arrange--->\n", his.getStyle("red"));
+				} catch (BadLocationException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 			else{
 				Line l = new Line(agents.ags.get(label_start).self,agents.ags.get(label_end).self);
@@ -181,12 +200,18 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 				l.weight = w;
 				edges.ls.add(l);
 				String str = "A Link Added: StartAgent: Agent " + label_start +", EndAgent: Agent " + label_end +",Weight: " + w + " ;\n";
-				history.append(str);
+				 try {
+					his.getDocument().insertString(his.getDocument().getLength(),
+					          str, his.getStyle("normal"));
+				} catch (BadLocationException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 			repaint();
 		}
 		if(e.getSource()==clear){
-			history.setText("");
+			his.setText("");
 		}
 
 	}
@@ -197,8 +222,14 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 		int x = e.getX();
 		int y = e.getY();
 		count++;
-		String str = "Agent" + count +" Added: x = " + x +",y = " +y + " ;\n";
-		history.append(str);
+		String str = "Agent " + count +" added: x = " + x +",y = " +y + " ;\n";
+		 try {
+			his.getDocument().insertString(his.getDocument().getLength(),
+			       str, his.getStyle("normal"));
+		} catch (BadLocationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		
 		agents.ags.add(new Agent(e.getX(),e.getY(),count));
 	}
