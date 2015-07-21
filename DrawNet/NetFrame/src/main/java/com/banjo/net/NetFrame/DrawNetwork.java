@@ -171,14 +171,18 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 			int label_start = Integer.parseInt(start.getText())-1;
 			int label_end = Integer.parseInt(end.getText())-1;
 			int w = Integer.parseInt(weight.getText());
-			
-			Line l = new Line(agents.ags.get(label_start).self,agents.ags.get(label_end).self);
-			l.label_start = label_start;
-			l.label_end = label_end;
-			l.weight = w;
-			edges.ls.add(l);
-			String str = "A Link Added: StartAgent: Agent " + label_start +", EndAgent: Agent " + label_end +",Weight: " + w + " ;\n";
-			history.append(str);
+			if(label_start > count-1 || label_end > count-1|| label_start < 0|| label_end < 0){
+				history.append("ERROR:<---Beyond Arrange--->");
+			}
+			else{
+				Line l = new Line(agents.ags.get(label_start).self,agents.ags.get(label_end).self);
+				l.label_start = label_start;
+				l.label_end = label_end;
+				l.weight = w;
+				edges.ls.add(l);
+				String str = "A Link Added: StartAgent: Agent " + label_start +", EndAgent: Agent " + label_end +",Weight: " + w + " ;\n";
+				history.append(str);
+			}
 			repaint();
 		}
 		if(e.getSource()==clear){
