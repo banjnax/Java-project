@@ -17,17 +17,14 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 
-import com.banjo.net.BaseModules.Agent;
-import com.banjo.net.BaseModules.Agents;
-import com.banjo.net.BaseModules.Line;
-import com.banjo.net.BaseModules.Lines;
+import com.banjo.net.BaseModules.*;
+
 
 
 public class DrawNetwork extends JFrame implements ActionListener , MouseListener{
@@ -43,8 +40,9 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 	Graphics gImage = null;
 	int count=0;
 	
-	Agents agents = new Agents();
-	Lines edges = new Lines();
+	Nodes nodes = new Nodes();
+	Links links = new Links();
+	Net net;
 	
 	JTextField start = new JTextField(2);
 	JTextField end = new JTextField(2);
@@ -58,6 +56,7 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 	JLabel w = new JLabel("Weight:");
 	JLabel h = new JLabel("History:");
 	JButton link = new JButton("Link");
+	JButton netDone = new JButton("NetDone!");
 	JScrollPane jcp = new JScrollPane(his);
 	public static void main(String[] args) {
 		new DrawNetwork().launch();
@@ -77,6 +76,9 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
         
         Style s1 = his.addStyle("red", normal);//"red" style based on the "normal" style ,add color attribute to the "red" style
         StyleConstants.setForeground(s1, Color.RED);
+       
+        Style s2 = his.addStyle("green", normal);
+        StyleConstants.setForeground(s2, Color.GREEN);
         his.setParagraphAttributes(normal, true);
 		
 		
@@ -94,7 +96,9 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 		his.setPreferredSize(new Dimension(100,100));
 		
 		
+		palette.addMouseListener(this);
 		link.addActionListener(this);
+		netDone.addActionListener(this);
 		clear.addActionListener(this);
 		
 		GridBagConstraints cons = new GridBagConstraints();
@@ -105,7 +109,7 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 		cons.weightx = 1;
 		cons.weighty = 1;
 		cons.gridwidth = 1;
-		cons.gridheight = 7;
+		cons.gridheight = 8;
 		this.add(palette,cons);
 		
 		//Add the operation control panel
@@ -145,24 +149,26 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 		cons.gridwidth = 2;
 		this.add(link,cons);
 		
-		cons.insets = new Insets(0, 5, 5, 0);
 		cons.gridx = 1;
 		cons.gridy = 4;
+		this.add(netDone,cons);
+		
+		cons.insets = new Insets(0, 5, 5, 0);
+		cons.gridx = 1;
+		cons.gridy = 5;
 		cons.gridwidth = 2;
 		this.add(h,cons);
 		
 		cons.gridx = 1;
-		cons.gridy = 5;
+		cons.gridy = 6;
 		cons.weighty = 1;
 		this.add(jcp,cons);
 		
 		cons.gridx = 1;
-		cons.gridy = 6;
+		cons.gridy = 7;
 		cons.weighty = 0;
 		cons.gridwidth = 2;
 		this.add(clear,cons);
-		
-		palette.addMouseListener(this);
 	}
 	public void paint(Graphics g){
 		offScreenImage = this.createImage(G_WIDTH, G_HEIGHT);
@@ -171,8 +177,8 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
         gImage.fillRect(0, 0, G_WIDTH, G_HEIGHT); 
         super.paint(gImage);
 		
-		this.agents.paint(gImage);
-		this.edges.paint(gImage);
+		this.nodes.paint(gImage);
+		this.links.paint(gImage);
 		
 		this.setBackground(Color.white);
         g.drawImage(offScreenImage, 0, 0, null);     
@@ -193,12 +199,12 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 					e1.printStackTrace();
 				}
 			}
-			else{
-				Line l = new Line(agents.ags.get(label_start).self,agents.ags.get(label_end).self);
+			else {
+				Link l = new Link(nodes.ags.get(label_start).self,nodes.ags.get(label_end).self);
 				l.label_start = label_start;
 				l.label_end = label_end;
 				l.weight = w;
-				edges.ls.add(l);
+				links.ls.add(l);
 				String str = "A Link Added: StartAgent: Agent " + label_start +", EndAgent: Agent " + label_end +",Weight: " + w + " ;\n";
 				 try {
 					his.getDocument().insertString(his.getDocument().getLength(),
@@ -209,6 +215,16 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 				}
 			}
 			repaint();
+		}
+		if(e.getSource() == netDone){
+			net = new UndirectedNet("MyNet", nodes.ags, links.ls);
+			 try {
+					his.getDocument().insertString(his.getDocument().getLength(),
+					          "A Net has builded!\n"+net.print(), his.getStyle("green"));
+				} catch (BadLocationException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 		}
 		if(e.getSource()==clear){
 			his.setText("");
@@ -231,7 +247,7 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 			e1.printStackTrace();
 		}
 		
-		agents.ags.add(new Agent(e.getX(),e.getY(),count));
+		nodes.ags.add(new Node(e.getX(),e.getY(),count));
 	}
 	@Override
 	public void mousePressed(MouseEvent e) {

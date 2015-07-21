@@ -3,14 +3,15 @@ package com.banjo.net.BaseModules;
 import java.awt.Color;
 import java.awt.Graphics;
 
-public class Line {
+public class Link {
 	Point start;
 	Point end;
 	public int label_start;
 	public int label_end;
 	public int weight;
+	public boolean directLink = true;
 	public Color self_color = Color.red;
-	public Line(Point s,Point e){
+	public Link(Point s,Point e){
 		this.start = new Point(s.x,s.y);
 		this.end = new Point(e.x,e.y);
 	}

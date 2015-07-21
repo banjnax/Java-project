@@ -3,14 +3,16 @@ package com.banjo.net.BaseModules;
 import java.awt.Color;
 import java.awt.Graphics;
 
-public class Agent {
+public class Node {
 	public Point self;
 	public String label;
+	public int number;
 	int count=0;
 	Color self_color = Color.green;
-	public Agent(int x,int y, int s){
+	public Node(int x,int y, int s){
 		this.self = new Point(x,y);
 		this.label = s+"";
+		this.number = s;
 		while(s!=0){
 			s/=10;
 			count++;
