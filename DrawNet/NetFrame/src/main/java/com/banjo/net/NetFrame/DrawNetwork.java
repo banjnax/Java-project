@@ -7,15 +7,23 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.Menu;
+import java.awt.MenuBar;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
@@ -44,10 +52,17 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 	Links links = new Links();
 	Net net;
 	
+	JMenuBar menuBar = new JMenuBar();
+	JMenu file = new JMenu("File");
+	JMenu edit = new JMenu("Edit");
+	JMenuItem _new = new JMenuItem("new");
+	JMenuItem _save = new JMenuItem("save");
+	
 	JTextField start = new JTextField(2);
 	JTextField end = new JTextField(2);
 	JTextField weight = new JTextField(2);
 	JPanel palette = new JPanel();
+	JPanel blank = new JPanel();
 	JTextPane his = new JTextPane();
 	JButton clear = new JButton("Clear History");
 	
@@ -55,8 +70,13 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 	JLabel e = new JLabel("End point:");
 	JLabel w = new JLabel("Weight:");
 	JLabel h = new JLabel("History:");
+	JLabel f = new JLabel("Functions:");
 	JButton link = new JButton("Link");
+	JRadioButton undirect = new JRadioButton("Undirect");
+	JRadioButton direct = new JRadioButton("Direct");
+	ButtonGroup type = new ButtonGroup();
 	JButton netDone = new JButton("NetDone!");
+	JComboBox<String> functions = new JComboBox<String>();
 	JScrollPane jcp = new JScrollPane(his);
 	public static void main(String[] args) {
 		new DrawNetwork().launch();
@@ -69,6 +89,11 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 		this.setLayout(new GridBagLayout());
 		this.setResizable(false);
 		
+		file.add(_new);
+		file.add(_save);
+		menuBar.add(file);
+		menuBar.add(edit);
+		
         Style def = his.getStyledDocument().addStyle(null, null);//this style define a normal style
         StyleConstants.setFontFamily(def, "verdana");
         StyleConstants.setFontSize(def, 10);
@@ -79,10 +104,16 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
        
         Style s2 = his.addStyle("green", normal);
         StyleConstants.setForeground(s2, Color.GREEN);
-        his.setParagraphAttributes(normal, true);
-		
-		
+        
 		palette.setBackground(Color.white);
+        type.add(undirect);
+        type.add(direct);
+        undirect.setSelected(true);
+		functions.addItem("Show");
+		functions.addItem("Path");
+		functions.addItem("Nodes");
+        his.setParagraphAttributes(normal, true);
+
 
 		e.setHorizontalAlignment(JLabel.RIGHT);
 		s.setHorizontalAlignment(JLabel.RIGHT);
@@ -104,12 +135,20 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 		GridBagConstraints cons = new GridBagConstraints();
 		//Add the palette
 		cons.fill = GridBagConstraints.BOTH;
-		cons.gridx = 0;
+		
+		cons.gridx = 0;//menubar
 		cons.gridy = 0;
+		cons.weightx = 1;
+		cons.weighty = 0;
+		cons.gridwidth = 3;
+		this.add(menuBar,cons);
+		
+		cons.gridx = 0;
+		cons.gridy = 1;
 		cons.weightx = 1;
 		cons.weighty = 1;
 		cons.gridwidth = 1;
-		cons.gridheight = 8;
+		cons.gridheight = 10;
 		this.add(palette,cons);
 		
 		//Add the operation control panel
@@ -117,7 +156,7 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 		//Add start,end,weight
 		cons.insets = new Insets(10, 10, 0, 0);
 		cons.gridx = 1;
-		cons.gridy = 0;
+		cons.gridy = 1;
 		cons.gridwidth = 1;
 		cons.gridheight = 1;
 		cons.weightx = 0;
@@ -125,47 +164,77 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 		this.add(s,cons);
 		
 		cons.gridx = 2;
-		cons.gridy = 0;
+		cons.gridy = 1;
 		this.add(start,cons);
 		
 		cons.gridx = 1;
-		cons.gridy = 1;
+		cons.gridy = 2;
 		this.add(e,cons);
 		
 		cons.gridx = 2;
-		cons.gridy = 1;
+		cons.gridy = 2;
 		this.add(end,cons);
 		
 		cons.gridx = 1;
-		cons.gridy = 2;
+		cons.gridy = 3;
 		this.add(w,cons);
 		
 		cons.gridx = 2;
-		cons.gridy = 2;
+		cons.gridy = 3;
 		this.add(weight,cons);
 		
+
 		cons.gridx = 1;
-		cons.gridy = 3;
+		cons.gridy = 4;
 		cons.gridwidth = 2;
 		this.add(link,cons);
 		
 		cons.gridx = 1;
-		cons.gridy = 4;
-		this.add(netDone,cons);
-		
-		cons.insets = new Insets(0, 5, 5, 0);
-		cons.gridx = 1;
 		cons.gridy = 5;
 		cons.gridwidth = 2;
-		this.add(h,cons);
+		this.add(undirect,cons);
 		
 		cons.gridx = 1;
 		cons.gridy = 6;
-		cons.weighty = 1;
+		cons.gridwidth = 2;
+		this.add(direct,cons);
+		
+		cons.gridx = 1;//NetDone
+		cons.gridy = 7;
+		this.add(netDone,cons);
+		
+		cons.gridx = 1;//Functions
+		cons.gridy = 8;
+		cons.gridwidth = 2;
+		this.add(f,cons);
+		
+		cons.gridx = 1;//Functions list
+		cons.gridy = 9;
+		cons.gridwidth = 2;
+		cons.weightx = 0;
+		this.add(functions,cons);
+		
+		cons.gridx = 1;
+		cons.gridy = 10;
+		cons.gridwidth = 2;
+		cons.weightx = 0;
+		this.add(blank,cons);
+		
+
+		cons.insets = new Insets(0, 5, 5, 0);
+		cons.gridwidth = 1;
+		cons.gridx = 0;
+		cons.gridy = 11;
+		this.add(h,cons);
+		
+		cons.gridx = 0;
+		cons.gridy = 12;
+		cons.gridwidth=3;
+		cons.weighty = 0;
 		this.add(jcp,cons);
 		
 		cons.gridx = 1;
-		cons.gridy = 7;
+		cons.gridy = 13;
 		cons.weighty = 0;
 		cons.gridwidth = 2;
 		this.add(clear,cons);
@@ -204,6 +273,9 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 				l.label_start = label_start;
 				l.label_end = label_end;
 				l.weight = w;
+				if(direct.isSelected()){
+					l.directLink = true;
+				}
 				links.ls.add(l);
 				String str = "A Link Added: StartAgent: Agent " + label_start +", EndAgent: Agent " + label_end +",Weight: " + w + " ;\n";
 				 try {
@@ -217,7 +289,12 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 			repaint();
 		}
 		if(e.getSource() == netDone){
-			net = new UndirectedNet("MyNet", nodes.ags, links.ls);
+			if(undirect.isSelected()){
+				net = new UndirectedNet("MyNet", nodes.ags, links.ls);
+			}
+			else{
+				net = new DirectedNet("MyNet", nodes.ags, links.ls);
+			}
 			 try {
 					his.getDocument().insertString(his.getDocument().getLength(),
 					          "A Net has builded!\n"+net.print(), his.getStyle("green"));
@@ -236,7 +313,7 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
 		int x = e.getX();
-		int y = e.getY();
+		int y = e.getY()+45;
 		count++;
 		String str = "Agent " + count +" added: x = " + x +",y = " +y + " ;\n";
 		 try {
@@ -247,7 +324,7 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 			e1.printStackTrace();
 		}
 		
-		nodes.ags.add(new Node(e.getX(),e.getY(),count));
+		nodes.ags.add(new Node(x,y,count));
 	}
 	@Override
 	public void mousePressed(MouseEvent e) {

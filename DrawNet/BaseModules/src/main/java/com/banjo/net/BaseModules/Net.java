@@ -13,6 +13,6 @@ public class Net {
 		this.links = links;
 	}
 	public String print(){
-		return "";
+		return this.name;
 	}
 }
