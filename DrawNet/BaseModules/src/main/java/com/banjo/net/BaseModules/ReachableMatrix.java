@@ -14,9 +14,9 @@ public class ReachableMatrix extends BaseMatrix{
 		Iterator<Link> it = this.links.iterator();
 		while(it.hasNext()){
 			Link l = it.next();
-			this.matrix[l.label_start][l.label_end] = 1;
+			this.matrix[l.label_end][l.label_start] = 1;//A(ij)=j->i
 			if(!l.directLink)
-				this.matrix[l.label_end][l.label_start] = 1;
+				this.matrix[l.label_start][l.label_end] = 1;
 		}
 	}
 	

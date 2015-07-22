@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class AdjacentMatrix extends BaseMatrix{
-	public static int UNDIRECT = 1;
-	public static int DIRECT = 2;
 	public int type;
 	public ArrayList<Link> links;
 	public AdjacentMatrix(int row,int col, ArrayList<Link> links,int type){
@@ -15,7 +13,7 @@ public class AdjacentMatrix extends BaseMatrix{
 		constructMatrix();
 	}
 	public void constructMatrix(){
-		if(this.type == AdjacentMatrix.UNDIRECT){
+		if(this.type == Net.UNDIRECT_NETWORK){
 			Iterator<Link> it = this.links.iterator();
 			while(it.hasNext()){
 				Link l = it.next();

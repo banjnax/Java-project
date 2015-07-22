@@ -32,6 +32,7 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 
 import com.banjo.net.BaseModules.*;
+import com.banjo.net.NetTools.MatrixFactory;
 
 
 
@@ -50,7 +51,8 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 	
 	Nodes nodes = new Nodes();
 	Links links = new Links();
-	Net net;
+	Net net = null;
+	MatrixFactory mf = new MatrixFactory();
 	
 	JMenuBar menuBar = new JMenuBar();
 	JMenu file = new JMenu("File");
@@ -88,6 +90,7 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 		this.setVisible(true);
 		this.setLayout(new GridBagLayout());
 		this.setResizable(false);
+		this.setTitle("NetWork");
 		
 		file.add(_new);
 		file.add(_save);
@@ -102,16 +105,18 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
         Style s1 = his.addStyle("red", normal);//"red" style based on the "normal" style ,add color attribute to the "red" style
         StyleConstants.setForeground(s1, Color.RED);
        
-        Style s2 = his.addStyle("green", normal);
-        StyleConstants.setForeground(s2, Color.GREEN);
+        Style s2 = his.addStyle("blue", normal);
+        StyleConstants.setForeground(s2, Color.BLUE);
         
 		palette.setBackground(Color.white);
         type.add(undirect);
         type.add(direct);
         undirect.setSelected(true);
-		functions.addItem("Show");
-		functions.addItem("Path");
-		functions.addItem("Nodes");
+		functions.addItem("AdjMatrix");
+		functions.addItem("ReaMatrix");
+		functions.addItem("CocitMatrix");
+		functions.addItem("CoupMatrix");
+		functions.addActionListener(this);
         his.setParagraphAttributes(normal, true);
 
 
@@ -277,7 +282,7 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 					l.directLink = true;
 				}
 				links.ls.add(l);
-				String str = "A Link Added: StartAgent: Agent " + label_start +", EndAgent: Agent " + label_end +",Weight: " + w + " ;\n";
+				String str = "A Link Added: StartAgent: Agent " + (label_start+1) +", EndAgent: Agent " + (label_end+1) +",Weight: " + w + " ;\n";
 				 try {
 					his.getDocument().insertString(his.getDocument().getLength(),
 					          str, his.getStyle("normal"));
@@ -290,18 +295,36 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 		}
 		if(e.getSource() == netDone){
 			if(undirect.isSelected()){
-				net = new UndirectedNet("MyNet", nodes.ags, links.ls);
+				net = new UndirectedNet("MyNet", nodes.ags, links.ls,Net.UNDIRECT_NETWORK);
 			}
 			else{
-				net = new DirectedNet("MyNet", nodes.ags, links.ls);
+				net = new DirectedNet("MyNet", nodes.ags, links.ls,Net.DIRECT_NETWORK);
 			}
 			 try {
 					his.getDocument().insertString(his.getDocument().getLength(),
-					          "A Net has builded!\n"+net.print(), his.getStyle("green"));
+					          "A Net has builded!\n"+net.toString()+"\n"+net.print(), his.getStyle("normal"));
 				} catch (BadLocationException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
+		}
+		if(e.getSource() == functions){
+			if(net!=null){
+				String s = "";
+			switch(functions.getSelectedIndex()){
+				case 0:s = "Adjacency Matrix:\n" + net.printMatrix(mf.getMatrix(net, MatrixFactory.ADJ_MATRIX));break;
+				case 1:s = "Reachable matrix:\n" + net.printMatrix(mf.getMatrix(net, MatrixFactory.REA_MATRIX));break;
+				case 2:s = "Cocitation Matrix:\n" + net.printMatrix(mf.getMatrix(net, MatrixFactory.COCITATION_MATRIX));break;
+				case 3:s = "Bibliographic Coupling Matrix:\n" + net.printMatrix(mf.getMatrix(net, MatrixFactory.COUPLE_MATRIX));break;
+			}
+			try {
+				his.getDocument().insertString(his.getDocument().getLength(),
+				         s, his.getStyle("blue"));
+			} catch (BadLocationException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
 		}
 		if(e.getSource()==clear){
 			his.setText("");

@@ -19,7 +19,7 @@ public class Link {
 		Color c = g.getColor();
 		g.setColor(self_color);
 		if(directLink){
-			this.paintk(g, start.x, start.y, (start.x+7*end.x)/8, (start.x+7*end.y)/8);
+			this.paintk(g, start.x, start.y, end.x, end.y);
 		}
 		g.drawLine(start.x, start.y, end.x, end.y);
 		g.drawString(weight+"", (start.x+end.x)/2, (start.y+end.y)/2);

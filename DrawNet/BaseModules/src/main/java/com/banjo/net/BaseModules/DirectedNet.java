@@ -3,28 +3,14 @@ package com.banjo.net.BaseModules;
 import java.util.ArrayList;
 
 public class DirectedNet extends Net{
-	public AdjacentMatrix adjMatrix;
-	public ReachableMatrix reaMatrix;
-	public DirectedNet(String name,ArrayList<Node> nodes,ArrayList<Link> links){
-		super(name,nodes,links);
-		this.adjMatrix = new AdjacentMatrix(nodes.size(), nodes.size(), links, AdjacentMatrix.DIRECT);
-		this.reaMatrix = new ReachableMatrix(nodes.size(), nodes.size(), links);
+
+	public DirectedNet(String name,ArrayList<Node> nodes,ArrayList<Link> links,int type){
+		super(name,nodes,links,type);
 	}
+	
 	@Override
 	public String print(){
-		return "AdjacentMatrix:\n"+printMatrix(adjMatrix) + "\nReachableMatrix:\n"+printMatrix(reaMatrix);
+		return "AdjacentMatrix:\n"+printMatrix(adjMatrix.useMatrix) + "\nReachableMatrix:\n"+printMatrix(reaMatrix.useMatrix);
 	}
-	public String printMatrix(BaseMatrix bm){
-		int row = bm.row;
-		int col = bm.col;
-		int i,j;
-		String s = "";
-		for(i=0;i<row;i++){
-			for(j=0;j<col;j++){
-				s+=(bm.matrix[i][j]+" ");
-			}
-			s+="\n";
-		}
-		return s;
-	}
+	
 }
