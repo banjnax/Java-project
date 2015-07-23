@@ -508,18 +508,19 @@ public class DrawNetwork extends JFrame{
 		                String[] str = in.nextLine().trim().split(",");
 		        		int start = Integer.parseInt(str[0]);
 		        		int end = Integer.parseInt(str[1]);
-		        		int weight = Integer.parseInt(str[2]); 
+		        		int weight = Integer.parseInt(str[2]);
+		        		int direct = Integer.parseInt(str[3]);
 		        		
 		        		if(!nodes.findNode(start)){
 		        			int s_x = 15+r.nextInt(width-30);
-			        		int s_y = 15+r.nextInt(height-50);
+			        		int s_y = 15+r.nextInt(height-50)+45;
 		        			Node n1 = new Node(s_x, s_y, start);
 			        		nodes.ags.add(n1);
 			        		count++;
 		        		}
 		        		if(!nodes.findNode(end)){
 		        			int e_x = 15+r.nextInt(width-30);
-			        		int e_y = 15+r.nextInt(height-50);
+			        		int e_y = 15+r.nextInt(height-50)+45;
 		        			Node n2 = new Node(e_x, e_y, end);
 			        		nodes.ags.add(n2);
 			        		count++;
@@ -529,6 +530,9 @@ public class DrawNetwork extends JFrame{
 		        		l.label_start = start;
 		        		l.label_end = end;
 		        		l.weight = weight;
+		        		if(direct == 1){
+		        			l.directLink = true;
+		        		}
 		        		
 		        		if(!links.findLink(start, end))
 		        			links.ls.add(l);
