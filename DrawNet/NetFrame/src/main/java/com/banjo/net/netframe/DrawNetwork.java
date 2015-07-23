@@ -20,6 +20,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Iterator;
 
+import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -47,7 +48,7 @@ import com.banjo.net.basemodules.Nodes;
 import com.banjo.net.basemodules.UndirectedNet;
 import com.banjo.net.nettools.MatrixFactory;
 
-public class DrawNetwork extends JFrame implements ActionListener , MouseListener{
+public class DrawNetwork extends JFrame{
 
 	private static final long serialVersionUID = 1L;
 	private static int G_WIDTH = 800;
@@ -58,7 +59,7 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 	Image vImage=null;
 	Image offScreenImage = null;
 	Graphics gImage = null;
-	int count=0;
+	public int count=0;
 	
 	Nodes nodes = new Nodes();
 	Links links = new Links();
@@ -71,6 +72,7 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 	JMenuItem _new = new JMenuItem("New");
 	JMenuItem _open = new JMenuItem("Open");
 	JMenuItem _save = new JMenuItem("Save");
+	JMenuItem _clear = new JMenuItem("Clear Palette");
 	
 	JTextField start = new JTextField(2);
 	JTextField end = new JTextField(2);
@@ -84,8 +86,10 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 	JLabel e = new JLabel("End point:");
 	JLabel w = new JLabel("Weight:");
 	JLabel h = new JLabel("History:");
-	JLabel f = new JLabel("Functions:");
+	JLabel f = new JLabel("Matrixes:");
 	JButton link = new JButton("Link");
+	JButton unlink = new JButton("Unlink");
+	
 	JRadioButton undirect = new JRadioButton("Undirect");
 	JRadioButton direct = new JRadioButton("Direct");
 	ButtonGroup type = new ButtonGroup();
@@ -110,8 +114,11 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 		file.add(_new);
 		file.add(_open);
 		file.add(_save);
-		_save.addActionListener(this);
-		_open.addActionListener(this);
+		edit.add(_clear);
+		_save.addActionListener(new MenuAction());
+		_open.addActionListener(new MenuAction());
+		_clear.addActionListener(new MenuAction());
+		
 		menuBar.add(file);
 		menuBar.add(edit);
 		
@@ -134,7 +141,7 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 		functions.addItem("ReaMatrix");
 		functions.addItem("CocitMatrix");
 		functions.addItem("CoupMatrix");
-		functions.addActionListener(this);
+		functions.addActionListener(new ListMenuAction());
         his.setParagraphAttributes(normal, true);
 
 
@@ -149,10 +156,11 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 		jcp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		his.setPreferredSize(new Dimension(100,100));
 		
-		palette.addMouseListener(this);
-		link.addActionListener(this);
-		netDone.addActionListener(this);
-		clear.addActionListener(this);
+		palette.addMouseListener(new MouseAction());
+		link.addActionListener(new ButtonAction());
+		unlink.addActionListener(new ButtonAction());
+		netDone.addActionListener(new ButtonAction());
+		clear.addActionListener(new ButtonAction());
 		
 		GridBagConstraints cons = new GridBagConstraints();
 		//Add the palette
@@ -208,8 +216,15 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 
 		cons.gridx = 1;
 		cons.gridy = 4;
-		cons.gridwidth = 2;
+		cons.gridwidth = 1;
 		this.add(link,cons);
+		
+		cons.insets = new Insets(10, 0, 0, 0);
+		cons.gridx = 2;
+		cons.gridy = 4;
+		cons.gridwidth = 1;
+		this.add(unlink,cons);
+		cons.insets = new Insets(10, 10, 0, 0);
 		
 		cons.gridx = 1;
 		cons.gridy = 5;
@@ -236,6 +251,7 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
 		cons.weightx = 0;
 		this.add(functions,cons);
 		
+		cons.insets = new Insets(5, 0, 0, 0);
 		cons.gridx = 1;
 		cons.gridy = 10;
 		cons.gridwidth = 2;
@@ -267,232 +283,249 @@ public class DrawNetwork extends JFrame implements ActionListener , MouseListene
         gImage.setColor(gImage.getColor());
         gImage.fillRect(0, 0, G_WIDTH, G_HEIGHT); 
         super.paint(gImage);
-		if(net!=null){
-			Iterator<Node> ita = net.nodes.iterator();
-			Iterator<Link> itl = net.links.iterator();
-			
-			while(ita.hasNext()) ita.next().paint(gImage);
-			while(itl.hasNext()) itl.next().paint(gImage);		
-		}
-		else{
-			nodes.paint(gImage);
-			links.paint(gImage);
-		}
+
+		nodes.paint(gImage);
+		links.paint(gImage);
+		
 		this.setBackground(Color.white);
         g.drawImage(offScreenImage, 0, 0, null);     
 	}
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
-		if(e.getSource()==link){
-			int label_start = Integer.parseInt(start.getText())-1;
-			int label_end = Integer.parseInt(end.getText())-1;
-			int w = Integer.parseInt(weight.getText());
-			if(w==0){
-				try {
-					throw new ValidationException("ERROR:<---Weight:Value valid--->\n");
-				} catch (ValidationException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-			if(label_start > count-1 || label_end > count-1|| label_start < 0|| label_end < 0){
-				 try {
-					his.getDocument().insertString(his.getDocument().getLength(),
-					          "ERROR:<---Beyond Arrange--->\n", his.getStyle("red"));
-				} catch (BadLocationException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-			else {
-				Link l = new Link(nodes.ags.get(label_start).self,nodes.ags.get(label_end).self);
-				l.label_start = label_start;
-				l.label_end = label_end;
-				l.weight = w;
-				if(direct.isSelected()){
-					l.directLink = true;
-				}
-					links.ls.add(l);
-				String str = "A Link Added: StartAgent: Agent " + (label_start+1) +", EndAgent: Agent " + (label_end+1) +",Weight: " + w + " ;\n";
-				 try {
-					his.getDocument().insertString(his.getDocument().getLength(),
-					          str, his.getStyle("normal"));
-				} catch (BadLocationException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-			repaint();
+	public void printInfo(String info,String type){
+		try {
+			his.getDocument().insertString(his.getDocument().getLength(),
+			         info, his.getStyle(type));
+		} catch (BadLocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		if(e.getSource() == netDone){
-				if(undirect.isSelected()){
-					net = new UndirectedNet("MyNet", nodes.ags, links.ls,Net.UNDIRECT_NETWORK);
-				}
-				else{
-					net = new DirectedNet("MyNet", nodes.ags, links.ls,Net.DIRECT_NETWORK);
-				}
-				 try {
-						his.getDocument().insertString(his.getDocument().getLength(),
-						          "A Net has builded!\n"+net.toString()+"\n"+net.print(), his.getStyle("normal"));
-					} catch (BadLocationException e1) {
+	}
+	public void printInfo(String info){
+		try {
+			his.getDocument().insertString(his.getDocument().getLength(),
+			         info, his.getStyle("normal"));
+		} catch (BadLocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	private class ButtonAction implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+			if(e.getSource()==link){
+				int label_start = Integer.parseInt(start.getText())-1;
+				int label_end = Integer.parseInt(end.getText())-1;
+				int w = Integer.parseInt(weight.getText());
+				if(w==0){
+					try {
+						throw new ValidationException("ERROR:<---Weight:Value valid--->\n");
+					} catch (ValidationException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-		}
-		if(e.getSource() == functions){
-			if(net!=null){
-				String s = "";
-			switch(functions.getSelectedIndex()){
-				case 0:s = "Adjacency Matrix:\n" + net.printMatrix(mf.getMatrix(net, MatrixFactory.ADJ_MATRIX));break;
-				case 1:s = "Reachable matrix:\n" + net.printMatrix(mf.getMatrix(net, MatrixFactory.REA_MATRIX));break;
-				case 2:s = "Cocitation Matrix:\n" + net.printMatrix(mf.getMatrix(net, MatrixFactory.COCITATION_MATRIX));break;
-				case 3:s = "Bibliographic Coupling Matrix:\n" + net.printMatrix(mf.getMatrix(net, MatrixFactory.COUPLE_MATRIX));break;
+				}
+				if(label_start > count-1 || label_end > count-1|| label_start < 0|| label_end < 0) printInfo( "ERROR:<---Beyond Arrange--->\n", "red");
+				
+				else {
+					Link l = new Link(nodes.ags.get(label_start).self,nodes.ags.get(label_end).self);
+					l.label_start = label_start;
+					l.label_end = label_end;
+					l.weight = w;
+					if(direct.isSelected()){
+						l.directLink = true;
+					}
+						links.ls.add(l);
+					String str = "A Link Added: StartAgent: Agent " + (label_start+1) +", EndAgent: Agent " + (label_end+1) +",Weight: " + w + " ;\n";
+					printInfo(str);
+				}
+				repaint();
 			}
-			repaint();
-			try {
-				his.getDocument().insertString(his.getDocument().getLength(),
-				         s, his.getStyle("blue"));
-			} catch (BadLocationException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		}
-		}
-		if(e.getSource()==clear){
-			his.setText("");
-		}
-		if(e.getSource() == _save){
-			saveFileDialog.setVisible(true);
-			String fileName = saveFileDialog.getDirectory()+saveFileDialog.getFile();
-			
-	           if(fileName!=null){
-	        	   try {
-					ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName));
-					if(net != null){
-						oos.writeObject(net);
-						oos.flush();
-						oos.close();
-						try {
-							his.getDocument().insertString(his.getDocument().getLength(),
-							         "Info:A net saved!"+fileName+".txt", his.getStyle("red"));
-						} catch (BadLocationException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
+			else if(e.getSource() == unlink){
+				boolean flag = false;
+				int label_start = Integer.parseInt(start.getText())-1;
+				int label_end = Integer.parseInt(end.getText())-1;
+				if(label_start > count-1 || label_end > count-1|| label_start < 0|| label_end < 0) printInfo("ERROR:<---Beyond Arrange--->\n","red");
+				else{
+					for(int i = 0;i<links.ls.size();i++){
+						Link l = links.ls.get(i);
+						if(l.label_start==label_start && l.label_end==label_end){
+							links.ls.remove(i);
+							flag = true;
+							break;
 						}
+					}
+					if(!flag) printInfo( "Info:No edge to be removed(No such edge in the net)!\n","red");
+					else {
+						repaint();
+						printInfo( "Info:Unlink an edge!\n","blue");
+					}
+				}
+			}
+			else if(e.getSource() == netDone){
+					if(undirect.isSelected()){
+						net = new UndirectedNet("MyNet", nodes.ags, links.ls,Net.UNDIRECT_NETWORK);
 					}
 					else{
-						try {
-							his.getDocument().insertString(his.getDocument().getLength(),
-							         "Warning:Nothing saved!", his.getStyle("red"));
-						} catch (BadLocationException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-						oos.close();
+						net = new DirectedNet("MyNet", nodes.ags, links.ls,Net.DIRECT_NETWORK);
 					}
-				} catch (FileNotFoundException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-	                  
-	          }
-	           
+					printInfo("A Net has builded!\n"+net.toString()+"\n"+net.print());
+			}
+			else if(e.getSource()==clear){
+				his.setText("");
+			}
+			else{
+				System.out.println("--------------");
+			}
+			
 		}
-		if(e.getSource() == _open){
-			openFileDialog.setVisible(true);
-			String fileName = openFileDialog.getDirectory()+openFileDialog.getFile();
-			ObjectInputStream ois = null;
-	           if(fileName!=null){
-	        	   try {
-					ois = new ObjectInputStream(new FileInputStream(fileName));
-					try {
-						net = (Net)ois.readObject();
-						this.count = net.col;
-						
-						Iterator<Node> ita = net.nodes.iterator();
-						Iterator<Link> itl = net.links.iterator();
-						
-						while(ita.hasNext()) nodes.ags.add(ita.next());
-						while(itl.hasNext()) links.ls.add(itl.next());		
-						his.getDocument().insertString(his.getDocument().getLength(),
-								"Info:A net loaded!", his.getStyle("blue"));
-						repaint();
-						
-					} catch (ClassNotFoundException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-						try {
-							his.getDocument().insertString(his.getDocument().getLength(),
-									"Error:Not object file!", his.getStyle("red"));
-						} catch (BadLocationException e2) {
-							// TODO Auto-generated catch block
-							e2.printStackTrace();
-						}
-					} catch (BadLocationException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-				} catch (FileNotFoundException e1) {
-					e1.printStackTrace();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-	        	   finally{
-	        		  if(ois != null)
-						try {
-							ois.close();
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-	        	   }
-	                  
-	          }
-		}
-
+		
 	}
 	
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
-		int x = e.getX();
-		int y = e.getY()+45;
-		count++;
-		String str = "Agent " + count +" added: x = " + x +",y = " +y + " ;\n";
-		 try {
-			his.getDocument().insertString(his.getDocument().getLength(),
-			       str, his.getStyle("normal"));
-		} catch (BadLocationException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-			nodes.ags.add(new Node(x,y,count));
-		}
-	@Override
-	public void mousePressed(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		// TODO Auto-generated method stub
-		repaint();
-	}
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
+	private class ListMenuAction implements ActionListener{
 
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+			if(e.getSource() == functions){
+				if(net!=null){
+					String s = "";
+				switch(functions.getSelectedIndex()){
+					case 0:s = "Adjacency Matrix:\n" + net.printMatrix(mf.getMatrix(net, MatrixFactory.ADJ_MATRIX));break;
+					case 1:s = "Reachable matrix:\n" + net.printMatrix(mf.getMatrix(net, MatrixFactory.REA_MATRIX));break;
+					case 2:s = "Cocitation Matrix:\n" + net.printMatrix(mf.getMatrix(net, MatrixFactory.COCITATION_MATRIX));break;
+					case 3:s = "Bibliographic Coupling Matrix:\n" + net.printMatrix(mf.getMatrix(net, MatrixFactory.COUPLE_MATRIX));break;
+				}
+				repaint();
+				printInfo(s,"blue");
+			}
+			}
+		}
+		
+	}
+	
+	private class MenuAction implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+			if(e.getSource() == _save){
+				saveFileDialog.setVisible(true);
+				String fileName = saveFileDialog.getDirectory()+saveFileDialog.getFile();
+				
+		           if(fileName!=null){
+		        	   try {
+						ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName));
+						if(net != null){
+							oos.writeObject(net);
+							oos.flush();
+							oos.close();
+							printInfo( "Info:A net saved!"+fileName+".txt\n","red");
+						}
+						else{
+							printInfo( "Warning:Nothing saved!\n", "red");
+							oos.close();
+						}
+					} catch (FileNotFoundException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+		                  
+		          }
+		           
+			}
+			else if(e.getSource() == _open){
+				openFileDialog.setVisible(true);
+				String fileName = openFileDialog.getDirectory()+openFileDialog.getFile();
+				ObjectInputStream ois = null;
+		           if(fileName!=null){
+		        	   try {
+						ois = new ObjectInputStream(new FileInputStream(fileName));
+						try {
+							net = (Net)ois.readObject();
+							count = net.col;
+							
+							Iterator<Node> ita = net.nodes.iterator();
+							Iterator<Link> itl = net.links.iterator();
+							
+							while(ita.hasNext()) nodes.ags.add(ita.next());
+							while(itl.hasNext()) links.ls.add(itl.next());
+							printInfo("Info:A net loaded!\n", "blue");
+							repaint();
+							
+						} catch (ClassNotFoundException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+							printInfo("Error:Not object file!\n", "red");
+						}
+					} catch (FileNotFoundException e1) {
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+		        	   finally{
+		        		  if(ois != null)
+							try {
+								ois.close();
+							} catch (IOException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+		        	   }
+		                  
+		          }
+			}
+			else if(e.getSource() == _clear){
+				net = null;
+				links.ls.removeAll(links.ls);
+				nodes.ags.removeAll(nodes.ags);
+				count = 0;
+				printInfo("Info:The palette is cleared!\n","blue");
+				repaint();
+			}
+			else{
+				System.out.println("YOU CAN ADD ANTHER MENU HERE!!");
+			}
+		}
+		
+	}
+	
+	private class MouseAction implements MouseListener{
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			// TODO Auto-generated method stub
+			int x = e.getX();
+			int y = e.getY()+45;
+			count++;
+			String str = "Agent " + count +" added: x = " + x +",y = " +y + " ;\n";
+			printInfo(str);
+			nodes.ags.add(new Node(x,y,count));
+			}
+		@Override
+		public void mousePressed(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			// TODO Auto-generated method stub
+			repaint();
+		}
+		@Override
+		public void mouseEntered(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+		@Override
+		public void mouseExited(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
 
 }
