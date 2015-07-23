@@ -7,8 +7,8 @@ import java.io.Serializable;
 public class Link implements Serializable{
 
 	private static final long serialVersionUID = 1L;
-	Point start;
-	Point end;
+	public Point start;
+	public Point end;
 	public int label_start;
 	public int label_end;
 	public int weight;

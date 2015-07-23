@@ -29,8 +29,9 @@ public class Net implements Serializable{
 		constructMatrix();
 	}
 	public void constructMatrix(){
-		adjMatrix = new AdjacentMatrix(nodes.size(), nodes.size(), links, type);
-		reaMatrix = new ReachableMatrix(nodes.size(), nodes.size(), links);
+		int max = findMaxLabel();
+		adjMatrix = new AdjacentMatrix(max, max, links, type);
+		reaMatrix = new ReachableMatrix(max, max, links);
 	}
 	public String printMatrix(Matrix m){
 		int i,j;
@@ -42,6 +43,11 @@ public class Net implements Serializable{
 			s+="\n";
 		}
 		return s;
+	}
+	public int findMaxLabel(){
+		int max = nodes.get(0).number;
+		for(int i=0;i<nodes.size();i++) if(max<nodes.get(i).number) max = nodes.get(i).number;
+		return max;
 	}
 	public String print(){
 		return "";

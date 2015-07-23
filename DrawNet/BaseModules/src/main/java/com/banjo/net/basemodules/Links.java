@@ -13,4 +13,14 @@ public class Links {
 		Iterator<Link> it = ls.iterator();
 		while(it.hasNext())it.next().paint(g);
 	}
+	public boolean findLink(int start,int end){
+		for(int i=0;i<ls.size();i++){
+			if(ls.get(i).label_start==start && ls.get(i).label_end==end) return true;
+		}
+		return false;
+	}
+	public Link getLink(int start,int end){
+		for(int i=0;i<ls.size();i++) if(ls.get(i).label_start == start && ls.get(i).label_end == end) return ls.get(i);
+		return null;
+	}
 }

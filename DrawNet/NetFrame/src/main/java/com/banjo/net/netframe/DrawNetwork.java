@@ -8,10 +8,14 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.MouseInfo;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -19,8 +23,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Iterator;
+import java.util.Random;
+import java.util.Scanner;
 
-import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -72,6 +77,7 @@ public class DrawNetwork extends JFrame{
 	JMenuItem _new = new JMenuItem("New");
 	JMenuItem _open = new JMenuItem("Open");
 	JMenuItem _save = new JMenuItem("Save");
+	JMenuItem _loaddata = new JMenuItem("Load Data..");
 	JMenuItem _clear = new JMenuItem("Clear Palette");
 	
 	JTextField start = new JTextField(2);
@@ -113,10 +119,12 @@ public class DrawNetwork extends JFrame{
 		
 		file.add(_new);
 		file.add(_open);
+		file.add(_loaddata);
 		file.add(_save);
 		edit.add(_clear);
 		_save.addActionListener(new MenuAction());
 		_open.addActionListener(new MenuAction());
+		_loaddata.addActionListener(new MenuAction());
 		_clear.addActionListener(new MenuAction());
 		
 		menuBar.add(file);
@@ -157,6 +165,7 @@ public class DrawNetwork extends JFrame{
 		his.setPreferredSize(new Dimension(100,100));
 		
 		palette.addMouseListener(new MouseAction());
+		palette.addMouseMotionListener(new MouseAction());
 		link.addActionListener(new ButtonAction());
 		unlink.addActionListener(new ButtonAction());
 		netDone.addActionListener(new ButtonAction());
@@ -314,8 +323,8 @@ public class DrawNetwork extends JFrame{
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
 			if(e.getSource()==link){
-				int label_start = Integer.parseInt(start.getText())-1;
-				int label_end = Integer.parseInt(end.getText())-1;
+				int label_start = Integer.parseInt(start.getText());
+				int label_end = Integer.parseInt(end.getText());
 				int w = Integer.parseInt(weight.getText());
 				if(w==0){
 					try {
@@ -325,10 +334,10 @@ public class DrawNetwork extends JFrame{
 						e1.printStackTrace();
 					}
 				}
-				if(label_start > count-1 || label_end > count-1|| label_start < 0|| label_end < 0) printInfo( "ERROR:<---Beyond Arrange--->\n", "red");
+				if(label_start > count || label_end > count|| label_start < 1|| label_end < 1) printInfo( "ERROR:<---Beyond Arrange--->\n", "red");
 				
 				else {
-					Link l = new Link(nodes.ags.get(label_start).self,nodes.ags.get(label_end).self);
+					Link l = new Link(nodes.getNode(label_start).self,nodes.getNode(label_end).self);
 					l.label_start = label_start;
 					l.label_end = label_end;
 					l.weight = w;
@@ -336,16 +345,16 @@ public class DrawNetwork extends JFrame{
 						l.directLink = true;
 					}
 						links.ls.add(l);
-					String str = "A Link Added: StartAgent: Agent " + (label_start+1) +", EndAgent: Agent " + (label_end+1) +",Weight: " + w + " ;\n";
+					String str = "A Link Added: StartAgent: Agent " + label_start +", EndAgent: Agent " + label_end +",Weight: " + w + " ;\n";
 					printInfo(str);
 				}
 				repaint();
 			}
 			else if(e.getSource() == unlink){
 				boolean flag = false;
-				int label_start = Integer.parseInt(start.getText())-1;
-				int label_end = Integer.parseInt(end.getText())-1;
-				if(label_start > count-1 || label_end > count-1|| label_start < 0|| label_end < 0) printInfo("ERROR:<---Beyond Arrange--->\n","red");
+				int label_start = Integer.parseInt(start.getText());
+				int label_end = Integer.parseInt(end.getText());
+				if(label_start > count || label_end > count|| label_start < 1|| label_end < 1) printInfo("ERROR:<---Beyond Arrange--->\n","red");
 				else{
 					for(int i = 0;i<links.ls.size();i++){
 						Link l = links.ls.get(i);
@@ -479,6 +488,59 @@ public class DrawNetwork extends JFrame{
 		                  
 		          }
 			}
+			else if(e.getSource() == _loaddata){
+				net = null;
+				links.ls.removeAll(links.ls);
+				nodes.ags.removeAll(nodes.ags);
+				count = 0;
+				repaint();
+				printInfo("Info:The palette is cleared!\n","blue");
+				openFileDialog.setVisible(true);
+				String fileName = openFileDialog.getDirectory()+openFileDialog.getFile();
+				try {
+		            Scanner in = new Scanner(new File(fileName));
+	        		
+	        		int width = palette.getWidth();
+	        		int height = palette.getHeight();
+	        		Random r =new Random();
+	        		
+		            while (in.hasNextLine()) {
+		                String[] str = in.nextLine().trim().split(",");
+		        		int start = Integer.parseInt(str[0]);
+		        		int end = Integer.parseInt(str[1]);
+		        		int weight = Integer.parseInt(str[2]); 
+		        		
+		        		if(!nodes.findNode(start)){
+		        			int s_x = 15+r.nextInt(width-30);
+			        		int s_y = 15+r.nextInt(height-50);
+		        			Node n1 = new Node(s_x, s_y, start);
+			        		nodes.ags.add(n1);
+			        		count++;
+		        		}
+		        		if(!nodes.findNode(end)){
+		        			int e_x = 15+r.nextInt(width-30);
+			        		int e_y = 15+r.nextInt(height-50);
+		        			Node n2 = new Node(e_x, e_y, end);
+			        		nodes.ags.add(n2);
+			        		count++;
+		        		}
+		        		
+		        		Link l = new Link(nodes.getNode(start).self, nodes.getNode(end).self);
+		        		l.label_start = start;
+		        		l.label_end = end;
+		        		l.weight = weight;
+		        		
+		        		if(!links.findLink(start, end))
+		        			links.ls.add(l);
+		            }
+		            in.close();
+		            printInfo("Info:Data loaded!\n","blue");
+		            repaint();
+		        } catch (FileNotFoundException ex) {
+		            ex.printStackTrace();
+		        }
+				
+			}
 			else if(e.getSource() == _clear){
 				net = null;
 				links.ls.removeAll(links.ls);
@@ -494,36 +556,79 @@ public class DrawNetwork extends JFrame{
 		
 	}
 	
-	private class MouseAction implements MouseListener{
+	private class MouseAction implements MouseListener,MouseMotionListener{
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			// TODO Auto-generated method stub
-			int x = e.getX();
-			int y = e.getY()+45;
-			count++;
-			String str = "Agent " + count +" added: x = " + x +",y = " +y + " ;\n";
-			printInfo(str);
-			nodes.ags.add(new Node(x,y,count));
+		
 			}
 		@Override
 		public void mousePressed(MouseEvent e) {
 			// TODO Auto-generated method stub
+			int x = e.getX();
+			int y = e.getY()+45;
 			
+			if(nodes.getNode(x, y)==null){
+				count++;
+				String str = "Agent " + count +" added: x = " + x +",y = " +y + " ;\n";
+				printInfo(str);
+				
+				nodes.ags.add(new Node(x,y,count));
+			}
+			else{
+				Node n = nodes.getNode(x, y);
+				n.self_color = Color.orange;
+			}
+			repaint();
 		}
 		@Override
 		public void mouseReleased(MouseEvent e) {
 			// TODO Auto-generated method stub
+			int x = e.getX();
+			int y = e.getY()+45;
+			if(nodes.getNode(x, y)!=null){
+				nodes.getNode(x, y).self_color = Color.green;
+			}
 			repaint();
 		}
 		@Override
 		public void mouseEntered(MouseEvent e) {
 			// TODO Auto-generated method stub
 			
+			
 		}
 		@Override
 		public void mouseExited(MouseEvent e) {
 			// TODO Auto-generated method stub
 			
+		}
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			// TODO Auto-generated method stub
+			int x = e.getX();
+			int y = e.getY()+45;
+			// TODO Auto-generated method stub
+			if(nodes.getNode(x, y)!=null){
+				Node n = nodes.getNode(x, y);
+				n.self.x = x;
+				n.self.y = y;
+				for(int i=0;i<links.ls.size();i++){
+					if(links.ls.get(i).label_start == n.number){
+						links.ls.get(i).start.x = x;
+						links.ls.get(i).start.y = y;
+					}
+					if(links.ls.get(i).label_end == n.number){
+						links.ls.get(i).end.x = x;
+						links.ls.get(i).end.y = y;
+					}
+				}
+				repaint();
+			}
+			
+		}
+		@Override
+		public void mouseMoved(MouseEvent e) {
+		
 		}
 		
 	}
