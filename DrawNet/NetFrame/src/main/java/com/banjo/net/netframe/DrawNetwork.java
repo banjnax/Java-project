@@ -8,8 +8,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
-import java.awt.MouseInfo;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -22,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Scanner;
@@ -75,33 +74,39 @@ public class DrawNetwork extends JFrame{
 	JMenu file = new JMenu("File");
 	JMenu edit = new JMenu("Edit");
 	JMenuItem _new = new JMenuItem("New");
-	JMenuItem _open = new JMenuItem("Open");
-	JMenuItem _save = new JMenuItem("Save");
+	JMenuItem _open = new JMenuItem("Load Net");
 	JMenuItem _loaddata = new JMenuItem("Load Data..");
+	JMenuItem _save = new JMenuItem("Save Net");
+	JMenuItem _savedata = new JMenuItem("Save Data..");
 	JMenuItem _clear = new JMenuItem("Clear Palette");
 	
-	JTextField start = new JTextField(2);
-	JTextField end = new JTextField(2);
-	JTextField weight = new JTextField(2);
 	JPanel palette = new JPanel();
 	JPanel blank = new JPanel();
-	JTextPane his = new JTextPane();
-	JButton clear = new JButton("Clear History");
 	
+	JTextField start = new JTextField(2);
 	JLabel s = new JLabel("Start point:");
+	JTextField end = new JTextField(2);
 	JLabel e = new JLabel("End point:");
+	JTextField weight = new JTextField(2);
 	JLabel w = new JLabel("Weight:");
-	JLabel h = new JLabel("History:");
-	JLabel f = new JLabel("Matrixes:");
+	
 	JButton link = new JButton("Link");
 	JButton unlink = new JButton("Unlink");
 	
 	JRadioButton undirect = new JRadioButton("Undirect");
 	JRadioButton direct = new JRadioButton("Direct");
 	ButtonGroup type = new ButtonGroup();
+	
 	JButton netDone = new JButton("NetDone!");
+	
+	JLabel f = new JLabel("Matrixes:");
 	JComboBox<String> functions = new JComboBox<String>();
+	
+	JLabel h = new JLabel("History:");
+	JTextPane his = new JTextPane();
 	JScrollPane jcp = new JScrollPane(his);
+	JButton clear = new JButton("Clear History");
+	
 	FileDialog openFileDialog = new FileDialog(this,"Open File",FileDialog.LOAD);
     FileDialog saveFileDialog = new FileDialog(this,"Save File As",FileDialog.SAVE);
     
@@ -109,6 +114,7 @@ public class DrawNetwork extends JFrame{
 		new DrawNetwork().launch();
 	}
 	public void launch(){
+		//outline of the frame
 		this.setSize(G_WIDTH,G_HEIGHT);
 		this.setLocation(G_X,G_Y);
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -117,19 +123,24 @@ public class DrawNetwork extends JFrame{
 		this.setResizable(false);
 		this.setTitle("NetWork");
 		
+		//menu part
 		file.add(_new);
 		file.add(_open);
 		file.add(_loaddata);
 		file.add(_save);
+		file.add(_savedata);
 		edit.add(_clear);
+		_new.addActionListener(new MenuAction());
 		_save.addActionListener(new MenuAction());
 		_open.addActionListener(new MenuAction());
 		_loaddata.addActionListener(new MenuAction());
+		_savedata.addActionListener(new MenuAction());
 		_clear.addActionListener(new MenuAction());
 		
 		menuBar.add(file);
 		menuBar.add(edit);
 		
+		//define some style about the history content
         Style def = his.getStyledDocument().addStyle(null, null);//this style define a normal style
         StyleConstants.setFontFamily(def, "verdana");
         StyleConstants.setFontSize(def, 10);
@@ -141,45 +152,60 @@ public class DrawNetwork extends JFrame{
         Style s2 = his.addStyle("blue", normal);
         StyleConstants.setForeground(s2, Color.BLUE);
         
+        //set background color of the palette
 		palette.setBackground(Color.white);
+		palette.addMouseListener(new MouseAction());//for the press action
+		palette.addMouseMotionListener(new MouseAction());//for the dragged node
+		
+		//Base input area settings
+		e.setHorizontalAlignment(JLabel.RIGHT);
+		start.setHorizontalAlignment(JTextField.CENTER);
+		s.setHorizontalAlignment(JLabel.RIGHT);
+		end.setHorizontalAlignment(JTextField.CENTER);
+		w.setHorizontalAlignment(JLabel.RIGHT);
+		weight.setHorizontalAlignment(JTextField.CENTER);
+		
+		//operation on the base input module
+		link.addActionListener(new ButtonAction());
+		unlink.addActionListener(new ButtonAction());
+		
+		//the radiobutton group, choose different edge and network
         type.add(undirect);
         type.add(direct);
         undirect.setSelected(true);
+        
+		netDone.addActionListener(new ButtonAction());
+
+		 //Functions part 1: Matrix part
 		functions.addItem("AdjMatrix");
 		functions.addItem("ReaMatrix");
 		functions.addItem("CocitMatrix");
 		functions.addItem("CoupMatrix");
+		functions.addItem("LaplacMatrix");
 		functions.addActionListener(new ListMenuAction());
-        his.setParagraphAttributes(normal, true);
-
-
-		e.setHorizontalAlignment(JLabel.RIGHT);
-		s.setHorizontalAlignment(JLabel.RIGHT);
-		w.setHorizontalAlignment(JLabel.RIGHT);
-		h.setHorizontalAlignment(JLabel.LEFT);
 		
-		start.setHorizontalAlignment(JTextField.CENTER);
-		end.setHorizontalAlignment(JTextField.CENTER);
-		weight.setHorizontalAlignment(JTextField.CENTER);
+		//History part : show the operations
+		h.setHorizontalAlignment(JLabel.LEFT);
+        his.setParagraphAttributes(normal, true);
 		jcp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		his.setPreferredSize(new Dimension(100,100));
-		
-		palette.addMouseListener(new MouseAction());
-		palette.addMouseMotionListener(new MouseAction());
-		link.addActionListener(new ButtonAction());
-		unlink.addActionListener(new ButtonAction());
-		netDone.addActionListener(new ButtonAction());
 		clear.addActionListener(new ButtonAction());
 		
+		setCompponents();
+		
+	}
+	private void setCompponents() {
+		// TODO Auto-generated method stub
 		GridBagConstraints cons = new GridBagConstraints();
+		
 		//Add the palette
-		cons.fill = GridBagConstraints.BOTH;
+		cons.fill = GridBagConstraints.BOTH;//for the extra space 
 		
 		cons.gridx = 0;//menubar
 		cons.gridy = 0;
 		cons.weightx = 1;
 		cons.weighty = 0;
-		cons.gridwidth = 3;
+		cons.gridwidth = 3;//the rows this component take up
 		this.add(menuBar,cons);
 		
 		cons.gridx = 0;
@@ -285,6 +311,7 @@ public class DrawNetwork extends JFrame{
 		cons.weighty = 0;
 		cons.gridwidth = 2;
 		this.add(clear,cons);
+		
 	}
 	public void paint(Graphics g){
 		offScreenImage = this.createImage(G_WIDTH, G_HEIGHT);
@@ -293,7 +320,7 @@ public class DrawNetwork extends JFrame{
         gImage.fillRect(0, 0, G_WIDTH, G_HEIGHT); 
         super.paint(gImage);
 
-		nodes.paint(gImage);
+		nodes.paint(gImage);//paint the component in this palette
 		links.paint(gImage);
 		
 		this.setBackground(Color.white);
@@ -302,13 +329,13 @@ public class DrawNetwork extends JFrame{
 	public void printInfo(String info,String type){
 		try {
 			his.getDocument().insertString(his.getDocument().getLength(),
-			         info, his.getStyle(type));
+			         info, his.getStyle(type));//get the history handle and add content to it
 		} catch (BadLocationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	public void printInfo(String info){
+	public void printInfo(String info){//default "normal" style
 		try {
 			his.getDocument().insertString(his.getDocument().getLength(),
 			         info, his.getStyle("normal"));
@@ -317,12 +344,12 @@ public class DrawNetwork extends JFrame{
 			e.printStackTrace();
 		}
 	}
-	private class ButtonAction implements ActionListener {
+	private class ButtonAction implements ActionListener {//the listeners for buttons
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			if(e.getSource()==link){
+			if(e.getSource()==link){//link between two nodes
 				int label_start = Integer.parseInt(start.getText());
 				int label_end = Integer.parseInt(end.getText());
 				int w = Integer.parseInt(weight.getText());
@@ -342,7 +369,7 @@ public class DrawNetwork extends JFrame{
 					l.label_end = label_end;
 					l.weight = w;
 					if(direct.isSelected()){
-						l.directLink = true;
+						l.directLink = true;//the signal of direct link to be marked, the default settins is undirect
 					}
 						links.ls.add(l);
 					String str = "A Link Added: StartAgent: Agent " + label_start +", EndAgent: Agent " + label_end +",Weight: " + w + " ;\n";
@@ -350,7 +377,7 @@ public class DrawNetwork extends JFrame{
 				}
 				repaint();
 			}
-			else if(e.getSource() == unlink){
+			else if(e.getSource() == unlink){//unlink an edge
 				boolean flag = false;
 				int label_start = Integer.parseInt(start.getText());
 				int label_end = Integer.parseInt(end.getText());
@@ -371,7 +398,7 @@ public class DrawNetwork extends JFrame{
 					}
 				}
 			}
-			else if(e.getSource() == netDone){
+			else if(e.getSource() == netDone){//to make sure that the net is done ,then can generate a net described in the palette
 					if(undirect.isSelected()){
 						net = new UndirectedNet("MyNet", nodes.ags, links.ls,Net.UNDIRECT_NETWORK);
 					}
@@ -391,7 +418,7 @@ public class DrawNetwork extends JFrame{
 		
 	}
 	
-	private class ListMenuAction implements ActionListener{
+	private class ListMenuAction implements ActionListener{//for the List listeners, mainly for the function part
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -399,11 +426,17 @@ public class DrawNetwork extends JFrame{
 			if(e.getSource() == functions){
 				if(net!=null){
 					String s = "";
-				switch(functions.getSelectedIndex()){
+				switch(functions.getSelectedIndex()){//print selected matrix type
 					case 0:s = "Adjacency Matrix:\n" + net.printMatrix(mf.getMatrix(net, MatrixFactory.ADJ_MATRIX));break;
 					case 1:s = "Reachable matrix:\n" + net.printMatrix(mf.getMatrix(net, MatrixFactory.REA_MATRIX));break;
 					case 2:s = "Cocitation Matrix:\n" + net.printMatrix(mf.getMatrix(net, MatrixFactory.COCITATION_MATRIX));break;
 					case 3:s = "Bibliographic Coupling Matrix:\n" + net.printMatrix(mf.getMatrix(net, MatrixFactory.COUPLE_MATRIX));break;
+					case 4:
+						if(net.type == Net.UNDIRECT_NETWORK){
+							s = "Graph Laplacian Matrix:\n" + net.printMatrix(mf.getMatrix(net, MatrixFactory.LAPLACIAN_MATRIX));break;
+						}
+						else s = "Error:Not Undirected Network!\n";
+
 				}
 				repaint();
 				printInfo(s,"blue");
@@ -413,14 +446,14 @@ public class DrawNetwork extends JFrame{
 		
 	}
 	
-	private class MenuAction implements ActionListener{
+	private class MenuAction implements ActionListener{//for the above menu include "file", "edit" and so on
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			if(e.getSource() == _save){
+			if(e.getSource() == _save){//file->save, to save as object
 				saveFileDialog.setVisible(true);
-				String fileName = saveFileDialog.getDirectory()+saveFileDialog.getFile();
+				String fileName = saveFileDialog.getDirectory()+saveFileDialog.getFile();//open the file select dialog
 				
 		           if(fileName!=null){
 		        	   try {
@@ -446,7 +479,7 @@ public class DrawNetwork extends JFrame{
 		          }
 		           
 			}
-			else if(e.getSource() == _open){
+			else if(e.getSource() == _open){//open as object
 				openFileDialog.setVisible(true);
 				String fileName = openFileDialog.getDirectory()+openFileDialog.getFile();
 				ObjectInputStream ois = null;
@@ -488,7 +521,7 @@ public class DrawNetwork extends JFrame{
 		                  
 		          }
 			}
-			else if(e.getSource() == _loaddata){
+			else if(e.getSource() == _loaddata){//load data that stored in numbers
 				net = null;
 				links.ls.removeAll(links.ls);
 				nodes.ags.removeAll(nodes.ags);
@@ -511,31 +544,45 @@ public class DrawNetwork extends JFrame{
 		        		int weight = Integer.parseInt(str[2]);
 		        		int direct = Integer.parseInt(str[3]);
 		        		
-		        		if(!nodes.findNode(start)){
-		        			int s_x = 15+r.nextInt(width-30);
-			        		int s_y = 15+r.nextInt(height-50)+45;
-		        			Node n1 = new Node(s_x, s_y, start);
+		        		int e_x,e_y,s_x,s_y;
+		        		Node n1,n2;
+		        		Link l;
+		        		
+		        		if(start == end){
+		        			e_x = 15+r.nextInt(width-30);
+			        		e_y = 15+r.nextInt(height-50)+45;
+		        			n1 = new Node(e_x, e_y, start);
 			        		nodes.ags.add(n1);
 			        		count++;
 		        		}
-		        		if(!nodes.findNode(end)){
-		        			int e_x = 15+r.nextInt(width-30);
-			        		int e_y = 15+r.nextInt(height-50)+45;
-		        			Node n2 = new Node(e_x, e_y, end);
-			        		nodes.ags.add(n2);
-			        		count++;
+		        		else{
+		        			
+			        		if(!nodes.findNode(start)){
+			        			s_x = 15+r.nextInt(width-30);
+				        		s_y = 15+r.nextInt(height-50)+45;
+			        			n1 = new Node(s_x, s_y, start);
+				        		nodes.ags.add(n1);
+				        		count++;
+			        		}
+			        		if(!nodes.findNode(end)){
+			        			e_x = 15+r.nextInt(width-30);
+				        		e_y = 15+r.nextInt(height-50)+45;
+			        			n2 = new Node(e_x, e_y, end);
+				        		nodes.ags.add(n2);
+				        		count++;
+			        		}
+			        		
+			        		l = new Link(nodes.getNode(start).self, nodes.getNode(end).self);
+			        		l.label_start = start;
+			        		l.label_end = end;
+			        		l.weight = weight;
+			        		if(direct == 1){
+			        			l.directLink = true;
+			        		}
+			        		
+			        		if(!links.findLink(start, end))
+			        			links.ls.add(l);
 		        		}
-		        		
-		        		Link l = new Link(nodes.getNode(start).self, nodes.getNode(end).self);
-		        		l.label_start = start;
-		        		l.label_end = end;
-		        		l.weight = weight;
-		        		if(direct == 1){
-		        			l.directLink = true;
-		        		}
-		        		
-		        		if(!links.findLink(start, end))
-		        			links.ls.add(l);
 		            }
 		            in.close();
 		            printInfo("Info:Data loaded!\n","blue");
@@ -545,7 +592,62 @@ public class DrawNetwork extends JFrame{
 		        }
 				
 			}
-			else if(e.getSource() == _clear){
+			else if(e.getSource() == _savedata){
+	
+				saveFileDialog.setVisible(true);
+				String fileName = saveFileDialog.getDirectory()+saveFileDialog.getFile();//open the file select dialog
+				
+		           if(fileName!=null){
+		        	   try {
+						FileOutputStream fos = new FileOutputStream(fileName);
+						ArrayList<Integer> savedNodes = new ArrayList<Integer>();
+						String newline = System.getProperty("line.separator");
+						if(nodes != null){
+							for(int i=0;i<links.ls.size();i++){
+								String s = "";
+								Link l = links.ls.get(i);
+								int start = l.label_start;
+								int end = l.label_end;
+								int w = l.weight;
+								int type;
+								if(l.directLink)
+									type = 1;
+								else type = 0;
+								s = start+","+end+","+w+","+type+newline;
+								fos.write(s.getBytes());
+								if(!savedNodes.contains(start))
+									savedNodes.add(start);
+								if(!savedNodes.contains(end))
+									savedNodes.add(end);
+							}
+							for(int i = 0;i<nodes.ags.size();i++){
+								if(!savedNodes.contains(nodes.ags.get(i).number)){
+									String s = nodes.ags.get(i).number+","+nodes.ags.get(i).number+","+0+","+0;
+									fos.write(s.getBytes());
+									if(i<nodes.ags.size()-1)
+										fos.write(newline.getBytes());
+								}
+							}
+							fos.flush();
+							fos.close();
+							printInfo( "Info:A net data saved!"+fileName+"\n","red");
+						}
+						else{
+							printInfo( "Warning:Nothing saved!\n", "red");
+							fos.close();
+						}
+					} catch (FileNotFoundException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+		                  
+		          }
+				
+			}
+			else if(e.getSource() == _clear || e.getSource() == _new){//clear the history content
 				net = null;
 				links.ls.removeAll(links.ls);
 				nodes.ags.removeAll(nodes.ags);
@@ -567,7 +669,7 @@ public class DrawNetwork extends JFrame{
 		
 			}
 		@Override
-		public void mousePressed(MouseEvent e) {
+		public void mousePressed(MouseEvent e) {//add a node or select a node that will be dragged
 			// TODO Auto-generated method stub
 			int x = e.getX();
 			int y = e.getY()+45;
@@ -586,7 +688,7 @@ public class DrawNetwork extends JFrame{
 			repaint();
 		}
 		@Override
-		public void mouseReleased(MouseEvent e) {
+		public void mouseReleased(MouseEvent e) {//add completed or have the node to a better position
 			// TODO Auto-generated method stub
 			int x = e.getX();
 			int y = e.getY()+45;
@@ -607,7 +709,7 @@ public class DrawNetwork extends JFrame{
 			
 		}
 		@Override
-		public void mouseDragged(MouseEvent e) {
+		public void mouseDragged(MouseEvent e) {//dragged a node to a right position,update the node's position
 			// TODO Auto-generated method stub
 			int x = e.getX();
 			int y = e.getY()+45;
