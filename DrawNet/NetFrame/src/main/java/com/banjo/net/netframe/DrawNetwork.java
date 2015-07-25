@@ -120,6 +120,10 @@ public class DrawNetwork extends JFrame{
     
     public int W_Y = 70;//just for the press action, make a right position of the node
     GridBagConstraints cons = null;
+    MenuAction ma = new MenuAction();
+    ListMenuAction lma = new ListMenuAction();
+    ButtonAction ba = new ButtonAction();
+    MouseAction mousea = new MouseAction();
 	public static void main(String[] args) {
 		new DrawNetwork().launch();
 	}
@@ -145,12 +149,12 @@ public class DrawNetwork extends JFrame{
 		file.add(_save);
 		file.add(_savedata);
 		edit.add(_clear);
-		_new.addActionListener(new MenuAction());
-		_save.addActionListener(new MenuAction());
-		_open.addActionListener(new MenuAction());
-		_loaddata.addActionListener(new MenuAction());
-		_savedata.addActionListener(new MenuAction());
-		_clear.addActionListener(new MenuAction());
+		_new.addActionListener(ma);
+		_save.addActionListener(ma);
+		_open.addActionListener(ma);
+		_loaddata.addActionListener(ma);
+		_savedata.addActionListener(ma);
+		_clear.addActionListener(ma);
 		
 		menuBar.add(file);
 		menuBar.add(edit);
@@ -189,8 +193,8 @@ public class DrawNetwork extends JFrame{
         
         //set background color of the palette
 		palette.setBackground(Color.white);
-		palette.addMouseListener(new MouseAction());//for the press action
-		palette.addMouseMotionListener(new MouseAction());//for the dragged node
+		palette.addMouseListener(mousea);//for the press action
+		palette.addMouseMotionListener(mousea);//for the dragged node
 		
 		//Base input area settings
 		e.setHorizontalAlignment(JLabel.RIGHT);
@@ -201,15 +205,15 @@ public class DrawNetwork extends JFrame{
 		weight.setHorizontalAlignment(JTextField.CENTER);
 		
 		//operation on the base input module
-		link.addActionListener(new ButtonAction());
-		unlink.addActionListener(new ButtonAction());
+		link.addActionListener(ba);
+		unlink.addActionListener(ba);
 		
 		//the radiobutton group, choose different edge and network
         type.add(undirect);
         type.add(direct);
         undirect.setSelected(true);
         
-		netDone.addActionListener(new ButtonAction());
+		netDone.addActionListener(ba);
 
 		 //Functions part 1: Matrix part
 		functions.addItem("AdjMatrix");
@@ -217,14 +221,14 @@ public class DrawNetwork extends JFrame{
 		functions.addItem("CocitMatrix");
 		functions.addItem("CoupMatrix");
 		functions.addItem("LaplacMatrix");
-		functions.addActionListener(new ListMenuAction());
+		functions.addActionListener(lma);
 		
 		//History part : show the operations
 		h.setHorizontalAlignment(JLabel.LEFT);
         his.setParagraphAttributes(normal, true);
 		jcp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		jcp.setPreferredSize(new Dimension(100,100));
-		clear.addActionListener(new ButtonAction());
+		clear.addActionListener(ba);
 		
 		setGraphCompponents();
 	}
