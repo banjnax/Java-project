@@ -1,5 +1,6 @@
 package com.banjo.net.netframe;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FileDialog;
@@ -36,8 +37,11 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -80,6 +84,10 @@ public class DrawNetwork extends JFrame{
 	JMenuItem _savedata = new JMenuItem("Save Data..");
 	JMenuItem _clear = new JMenuItem("Clear Palette");
 	
+	JTabbedPane jtp = new JTabbedPane(JTabbedPane.TOP);//to clear the different faces to the users for different functions presentation
+	JPanel graph = new JPanel();
+	JPanel chart = new JPanel();
+	
 	JPanel palette = new JPanel();
 	JPanel blank = new JPanel();
 	
@@ -110,6 +118,8 @@ public class DrawNetwork extends JFrame{
 	FileDialog openFileDialog = new FileDialog(this,"Open File",FileDialog.LOAD);
     FileDialog saveFileDialog = new FileDialog(this,"Save File As",FileDialog.SAVE);
     
+    public int W_Y = 70;//just for the press action, make a right position of the node
+    GridBagConstraints cons = null;
 	public static void main(String[] args) {
 		new DrawNetwork().launch();
 	}
@@ -119,9 +129,14 @@ public class DrawNetwork extends JFrame{
 		this.setLocation(G_X,G_Y);
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setVisible(true);
-		this.setLayout(new GridBagLayout());
+		this.setLayout(new BorderLayout());//new GridBagLayout()
 		this.setResizable(false);
 		this.setTitle("NetWork");
+		this.add(menuBar,BorderLayout.NORTH);
+		this.add(jtp,BorderLayout.CENTER);
+		
+		graph.setLayout(new GridBagLayout());
+		chart.setLayout(new GridBagLayout());
 		
 		//menu part
 		file.add(_new);
@@ -140,6 +155,26 @@ public class DrawNetwork extends JFrame{
 		menuBar.add(file);
 		menuBar.add(edit);
 		
+		jtp.add(graph,"Graph");
+		jtp.add(chart,"Chart");
+		jtp.addChangeListener(new ChangeListener() {
+			
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				JTabbedPane j = (JTabbedPane)e.getSource();
+				if(j.getSelectedIndex() == 0)
+					repaint();
+			}
+		});
+		
+		constructGraph();
+		constructChart();
+		
+	}
+	private void constructChart(){
+		
+	}
+	private void constructGraph(){
 		//define some style about the history content
         Style def = his.getStyledDocument().addStyle(null, null);//this style define a normal style
         StyleConstants.setFontFamily(def, "verdana");
@@ -188,129 +223,121 @@ public class DrawNetwork extends JFrame{
 		h.setHorizontalAlignment(JLabel.LEFT);
         his.setParagraphAttributes(normal, true);
 		jcp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		his.setPreferredSize(new Dimension(100,100));
+		jcp.setPreferredSize(new Dimension(100,100));
 		clear.addActionListener(new ButtonAction());
 		
-		setCompponents();
-		
+		setGraphCompponents();
 	}
-	private void setCompponents() {
+	private void setGraphCompponents() {
 		// TODO Auto-generated method stub
-		GridBagConstraints cons = new GridBagConstraints();
+		cons = new GridBagConstraints();
 		
 		//Add the palette
 		cons.fill = GridBagConstraints.BOTH;//for the extra space 
 		
-		cons.gridx = 0;//menubar
-		cons.gridy = 0;
-		cons.weightx = 1;
-		cons.weighty = 0;
-		cons.gridwidth = 3;//the rows this component take up
-		this.add(menuBar,cons);
-		
 		cons.gridx = 0;
-		cons.gridy = 1;
+		cons.gridy = 0;
 		cons.weightx = 1;
 		cons.weighty = 1;
 		cons.gridwidth = 1;
 		cons.gridheight = 10;
-		this.add(palette,cons);
+		graph.add(palette,cons);
 		
 		//Add the operation control panel
 		
 		//Add start,end,weight
 		cons.insets = new Insets(10, 10, 0, 0);
 		cons.gridx = 1;
-		cons.gridy = 1;
+		cons.gridy = 0;
 		cons.gridwidth = 1;
 		cons.gridheight = 1;
 		cons.weightx = 0;
 		cons.weighty = 0;
-		this.add(s,cons);
+		graph.add(s,cons);
+		
+		cons.gridx = 2;
+		cons.gridy = 0;
+		graph.add(start,cons);
+		
+		cons.gridx = 1;
+		cons.gridy = 1;
+		graph.add(e,cons);
 		
 		cons.gridx = 2;
 		cons.gridy = 1;
-		this.add(start,cons);
+		graph.add(end,cons);
 		
 		cons.gridx = 1;
 		cons.gridy = 2;
-		this.add(e,cons);
+		graph.add(w,cons);
 		
 		cons.gridx = 2;
 		cons.gridy = 2;
-		this.add(end,cons);
-		
-		cons.gridx = 1;
-		cons.gridy = 3;
-		this.add(w,cons);
-		
-		cons.gridx = 2;
-		cons.gridy = 3;
-		this.add(weight,cons);
+		graph.add(weight,cons);
 		
 
 		cons.gridx = 1;
-		cons.gridy = 4;
+		cons.gridy = 3;
 		cons.gridwidth = 1;
-		this.add(link,cons);
+		graph.add(link,cons);
 		
 		cons.insets = new Insets(10, 0, 0, 0);
 		cons.gridx = 2;
-		cons.gridy = 4;
+		cons.gridy = 3;
 		cons.gridwidth = 1;
-		this.add(unlink,cons);
+		graph.add(unlink,cons);
 		cons.insets = new Insets(10, 10, 0, 0);
+		
+		cons.gridx = 1;
+		cons.gridy = 4;
+		cons.gridwidth = 2;
+		graph.add(undirect,cons);
 		
 		cons.gridx = 1;
 		cons.gridy = 5;
 		cons.gridwidth = 2;
-		this.add(undirect,cons);
-		
-		cons.gridx = 1;
-		cons.gridy = 6;
-		cons.gridwidth = 2;
-		this.add(direct,cons);
+		graph.add(direct,cons);
 		
 		cons.gridx = 1;//NetDone
-		cons.gridy = 7;
-		this.add(netDone,cons);
+		cons.gridy = 6;
+		graph.add(netDone,cons);
 		
 		cons.gridx = 1;//Functions
-		cons.gridy = 8;
+		cons.gridy = 7;
 		cons.gridwidth = 2;
-		this.add(f,cons);
+		graph.add(f,cons);
 		
 		cons.gridx = 1;//Functions list
-		cons.gridy = 9;
+		cons.gridy = 8;
 		cons.gridwidth = 2;
 		cons.weightx = 0;
-		this.add(functions,cons);
+		graph.add(functions,cons);
 		
 		cons.insets = new Insets(5, 0, 0, 0);
 		cons.gridx = 1;
-		cons.gridy = 10;
+		cons.gridy = 9;
 		cons.gridwidth = 2;
 		cons.weightx = 0;
-		this.add(blank,cons);
+		graph.add(blank,cons);
 		
 
 		cons.insets = new Insets(0, 5, 5, 0);
 		cons.gridwidth = 1;
 		cons.gridx = 0;
-		cons.gridy = 11;
-		this.add(h,cons);
+		cons.gridy = 10;
+		graph.add(h,cons);
 		
 		cons.gridx = 0;
-		cons.gridy = 12;
+		cons.gridy = 11;
 		cons.gridwidth=3;
 		cons.weighty = 0;
-		this.add(jcp,cons);
+		graph.add(jcp,cons);
 		
 		cons.gridx = 1;
-		cons.gridy = 13;
+		cons.gridy = 12;
 		cons.weighty = 0;
 		cons.gridwidth = 2;
-		this.add(clear,cons);
+		graph.add(clear,cons);
 		
 	}
 	public void paint(Graphics g){
@@ -406,6 +433,7 @@ public class DrawNetwork extends JFrame{
 						net = new DirectedNet("MyNet", nodes.ags, links.ls,Net.DIRECT_NETWORK);
 					}
 					printInfo("A Net has builded!\n"+net.toString()+"\n"+net.print());
+					repaint();
 			}
 			else if(e.getSource()==clear){
 				his.setText("");
@@ -550,7 +578,7 @@ public class DrawNetwork extends JFrame{
 		        		
 		        		if(start == end){
 		        			e_x = 15+r.nextInt(width-30);
-			        		e_y = 15+r.nextInt(height-50)+45;
+			        		e_y = 15+r.nextInt(height-50)+W_Y;
 		        			n1 = new Node(e_x, e_y, start);
 			        		nodes.ags.add(n1);
 			        		count++;
@@ -559,14 +587,14 @@ public class DrawNetwork extends JFrame{
 		        			
 			        		if(!nodes.findNode(start)){
 			        			s_x = 15+r.nextInt(width-30);
-				        		s_y = 15+r.nextInt(height-50)+45;
+				        		s_y = 15+r.nextInt(height-50)+W_Y;
 			        			n1 = new Node(s_x, s_y, start);
 				        		nodes.ags.add(n1);
 				        		count++;
 			        		}
 			        		if(!nodes.findNode(end)){
 			        			e_x = 15+r.nextInt(width-30);
-				        		e_y = 15+r.nextInt(height-50)+45;
+				        		e_y = 15+r.nextInt(height-50)+W_Y;
 			        			n2 = new Node(e_x, e_y, end);
 				        		nodes.ags.add(n2);
 				        		count++;
@@ -672,7 +700,7 @@ public class DrawNetwork extends JFrame{
 		public void mousePressed(MouseEvent e) {//add a node or select a node that will be dragged
 			// TODO Auto-generated method stub
 			int x = e.getX();
-			int y = e.getY()+45;
+			int y = e.getY()+W_Y;
 			
 			if(nodes.getNode(x, y)==null){
 				count++;
@@ -691,7 +719,7 @@ public class DrawNetwork extends JFrame{
 		public void mouseReleased(MouseEvent e) {//add completed or have the node to a better position
 			// TODO Auto-generated method stub
 			int x = e.getX();
-			int y = e.getY()+45;
+			int y = e.getY()+W_Y;
 			if(nodes.getNode(x, y)!=null){
 				nodes.getNode(x, y).self_color = Color.green;
 			}
@@ -712,12 +740,16 @@ public class DrawNetwork extends JFrame{
 		public void mouseDragged(MouseEvent e) {//dragged a node to a right position,update the node's position
 			// TODO Auto-generated method stub
 			int x = e.getX();
-			int y = e.getY()+45;
+			int y = e.getY()+W_Y;
 			// TODO Auto-generated method stub
 			if(nodes.getNode(x, y)!=null){
 				Node n = nodes.getNode(x, y);
 				n.self.x = x;
 				n.self.y = y;
+				if(x - Node.size/2 <0) n.self.x = Node.size/2;
+				if(x+Node.size/2 > palette.getWidth()) n.self.x = palette.getWidth() - Node.size/2;
+				if(y - Node.size/2 - W_Y <0) n.self.y = Node.size/2 + W_Y;
+				if(y + Node.size/2 > palette.getHeight()+W_Y) n.self.y = palette.getHeight()+ W_Y - Node.size/2;
 				for(int i=0;i<links.ls.size();i++){
 					if(links.ls.get(i).label_start == n.number){
 						links.ls.get(i).start.x = x;

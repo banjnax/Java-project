@@ -11,7 +11,7 @@ public class Node implements Serializable{
 	public String label;
 	public int number;
 	int count=0;
-	public int size = 30;
+	public static int size = 30;
 	public Color self_color = Color.green;
 	public Node(int x,int y, int s){
 		this.self = new Point(x,y);
