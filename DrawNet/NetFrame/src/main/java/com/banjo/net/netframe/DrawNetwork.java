@@ -2,8 +2,11 @@ package com.banjo.net.netframe;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FileDialog;
 import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,25 +22,34 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.Scanner;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextPane;
 import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
 
 import com.banjo.net.basemodules.Link;
 import com.banjo.net.basemodules.Net;
 import com.banjo.net.basemodules.Node;
 
 public class DrawNetwork extends JFrame{
-
+/**
+ * @author banjo
+ */
 	private static final long serialVersionUID = 1L;
 	private static int G_WIDTH = 800;
-	private static int G_HEIGHT = 800;
+	private static int G_HEIGHT = 700;
 	private static int G_X = 400;
 	private static int G_Y = 100;
 	
@@ -56,8 +68,12 @@ public class DrawNetwork extends JFrame{
 	JMenuItem _clear = new JMenuItem("Clear Palette");
 	
 	JTabbedPane jtp = new JTabbedPane(JTabbedPane.TOP);//to clear the different faces to the users for different functions presentation
-
-	JPanel chart = new JPanel();
+	
+	JPanel hisPart = new JPanel();
+	JLabel h = new JLabel("History:");
+	static JTextPane his = new JTextPane();
+	JScrollPane jcp = new JScrollPane(his);
+	JButton clear = new JButton("Clear History");
 	
 	FileDialog openFileDialog = new FileDialog(this,"Open File",FileDialog.LOAD);
     FileDialog saveFileDialog = new FileDialog(this,"Save File As",FileDialog.SAVE);
@@ -66,7 +82,7 @@ public class DrawNetwork extends JFrame{
     Timer timer = new Timer(delay, new TimerAction());//repaint the frame by a timer
     
     DrawGraph drawGraph = new DrawGraph();//have the graph handle
-    DrawChart drawChart = new DrawChart();
+    DrawChart drawChart = new DrawChart(drawGraph);
     
     int paintFlag = 0;
 	public static void main(String[] args) {
@@ -81,8 +97,23 @@ public class DrawNetwork extends JFrame{
 		this.setLayout(new BorderLayout());//new GridBagLayout()
 		this.setResizable(false);
 		this.setTitle("NetWork");
-		this.add(menuBar,BorderLayout.NORTH);
-		this.add(jtp,BorderLayout.CENTER);
+		
+		setComponent();
+		
+		jtp.addChangeListener(new ChangeListener() {
+			
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				JTabbedPane j = (JTabbedPane)e.getSource();
+				if(j.getSelectedIndex() == 0)
+					paintFlag = 0;
+				else paintFlag = 1;
+			}
+		});
+		
+		timer.start();
+	}
+	public void setComponent(){
 		
 		//menu part
 		file.add(_new);
@@ -103,18 +134,59 @@ public class DrawNetwork extends JFrame{
 		
 		jtp.add(drawGraph.graph,"Graph");
 		jtp.add(drawChart.jchartp,"Chart");
-		jtp.addChangeListener(new ChangeListener() {
+		
+		//History part : show the operations
+		
+		//define some style about the history content
+        Style def = his.getStyledDocument().addStyle(null, null);//this style define a normal style
+        StyleConstants.setFontFamily(def, "verdana");
+        StyleConstants.setFontSize(def, 10);
+        Style normal = his.addStyle("normal", def);//name "def" to be normal
+        
+        Style s1 = his.addStyle("red", normal);//"red" style based on the "normal" style ,add color attribute to the "red" style
+        StyleConstants.setForeground(s1, Color.RED);
+       
+        Style s2 = his.addStyle("blue", normal);
+        StyleConstants.setForeground(s2, Color.BLUE);
+        
+		hisPart.setLayout(new GridBagLayout());
+		
+		h.setHorizontalAlignment(JLabel.LEFT);
+        his.setParagraphAttributes(normal, true);
+		jcp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		jcp.setPreferredSize(new Dimension(100,100));
+		clear.addActionListener(new ActionListener() {
 			
 			@Override
-			public void stateChanged(ChangeEvent e) {
-				JTabbedPane j = (JTabbedPane)e.getSource();
-				if(j.getSelectedIndex() == 0)
-					paintFlag = 0;
-				else paintFlag = 1;
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				his.setText("");
 			}
 		});
 		
-		timer.start();
+		GridBagConstraints cons = new GridBagConstraints();
+		cons.fill = GridBagConstraints.BOTH;
+		cons.gridx = 0;
+		cons.gridy = 0;
+		hisPart.add(h,cons);
+		
+		cons.gridx = 0;
+		cons.gridy = 1;
+		cons.weightx = 1;
+		cons.gridwidth = 2;
+		hisPart.add(jcp,cons);
+		
+		cons.gridx = 1;
+		cons.gridy = 2;
+		cons.fill = GridBagConstraints.NONE;
+		cons.anchor = GridBagConstraints.EAST;
+		cons.weightx = 0;
+		cons.gridwidth = 1;
+		hisPart.add(clear,cons);
+		
+		this.add(menuBar,BorderLayout.NORTH);
+		this.add(jtp,BorderLayout.CENTER);
+		this.add(hisPart,BorderLayout.SOUTH);
 	}
 	public void paint(Graphics g){
 		offScreenImage = this.createImage(G_WIDTH, G_HEIGHT);
@@ -130,6 +202,24 @@ public class DrawNetwork extends JFrame{
 		
 		this.setBackground(Color.white);
         g.drawImage(offScreenImage, 0, 0, null);     
+	}
+	public static void printInfo(String info,String type){
+		try {
+			his.getDocument().insertString(his.getDocument().getLength(),
+			         info, his.getStyle(type));//get the history handle and add content to it
+		} catch (BadLocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	public static void printInfo(String info){//default "normal" style
+		try {
+			his.getDocument().insertString(his.getDocument().getLength(),
+			         info, his.getStyle("normal"));
+		} catch (BadLocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	private class TimerAction implements ActionListener{
 		
@@ -156,10 +246,10 @@ public class DrawNetwork extends JFrame{
 							oos.writeObject(drawGraph.net);
 							oos.flush();
 							oos.close();
-							drawGraph.printInfo( "Info:A net saved!"+fileName+".txt\n","red");
+							printInfo( "Info:A net saved!"+fileName+".txt\n","red");
 						}
 						else{
-							drawGraph.printInfo( "Warning:Nothing saved!\n", "red");
+							printInfo( "Warning:Nothing saved!\n", "red");
 							oos.close();
 						}
 					} catch (FileNotFoundException e1) {
@@ -189,13 +279,13 @@ public class DrawNetwork extends JFrame{
 							
 							while(ita.hasNext()) drawGraph.nodes.ags.add(ita.next());
 							while(itl.hasNext()) drawGraph.links.ls.add(itl.next());
-							drawGraph.printInfo("Info:A net loaded!\n", "blue");
+							printInfo("Info:A net loaded!\n", "blue");
 							repaint();
 							
 						} catch (ClassNotFoundException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
-							drawGraph.printInfo("Error:Not object file!\n", "red");
+							printInfo("Error:Not object file!\n", "red");
 						}
 					} catch (FileNotFoundException e1) {
 						e1.printStackTrace();
@@ -221,7 +311,7 @@ public class DrawNetwork extends JFrame{
 				drawGraph.nodes.ags.removeAll(drawGraph.nodes.ags);
 				drawGraph.count = 0;
 				repaint();
-				drawGraph.printInfo("Info:The palette is cleared!\n","blue");
+				printInfo("Info:The palette is cleared!\n","blue");
 				openFileDialog.setVisible(true);
 				String fileName = openFileDialog.getDirectory()+openFileDialog.getFile();
 				try {
@@ -279,7 +369,7 @@ public class DrawNetwork extends JFrame{
 		        		}
 		            }
 		            in.close();
-		            drawGraph.printInfo("Info:Data loaded!\n","blue");
+		            printInfo("Info:Data loaded!\n","blue");
 		            repaint();
 		        } catch (FileNotFoundException ex) {
 		            ex.printStackTrace();
@@ -324,10 +414,10 @@ public class DrawNetwork extends JFrame{
 							}
 							fos.flush();
 							fos.close();
-							drawGraph.printInfo( "Info:A net data saved!"+fileName+"\n","red");
+							printInfo( "Info:A net data saved!"+fileName+"\n","red");
 						}
 						else{
-							drawGraph.printInfo( "Warning:Nothing saved!\n", "red");
+							printInfo( "Warning:Nothing saved!\n", "red");
 							fos.close();
 						}
 					} catch (FileNotFoundException e1) {
@@ -346,7 +436,7 @@ public class DrawNetwork extends JFrame{
 				drawGraph.links.ls.removeAll(drawGraph.links.ls);
 				drawGraph.nodes.ags.removeAll(drawGraph.nodes.ags);
 				drawGraph.count = 0;
-				drawGraph.printInfo("Info:The palette is cleared!\n","blue");
+				printInfo("Info:The palette is cleared!\n","blue");
 				repaint();
 			}
 			else{

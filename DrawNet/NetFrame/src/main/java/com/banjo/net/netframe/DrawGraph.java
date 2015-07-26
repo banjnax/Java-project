@@ -1,7 +1,6 @@
 package com.banjo.net.netframe;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -17,12 +16,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.JTextPane;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
 import javax.xml.bind.ValidationException;
 
 import com.banjo.net.basemodules.DirectedNet;
@@ -64,11 +58,6 @@ public class DrawGraph {
 	JLabel f = new JLabel("Matrixes:");
 	JComboBox<String> functions = new JComboBox<String>();
 	
-	JLabel h = new JLabel("History:");
-	JTextPane his = new JTextPane();
-	JScrollPane jcp = new JScrollPane(his);
-	JButton clear = new JButton("Clear History");
-	
 	public int count=0;//record the number of nodes
 	public int W_Y = 70;//just for the press action, make a right position of the node
     GridBagConstraints cons = null;
@@ -80,18 +69,6 @@ public class DrawGraph {
 		constructGraph();
 	}
 	private void constructGraph(){
-		//define some style about the history content
-        Style def = his.getStyledDocument().addStyle(null, null);//this style define a normal style
-        StyleConstants.setFontFamily(def, "verdana");
-        StyleConstants.setFontSize(def, 10);
-        Style normal = his.addStyle("normal", def);//name "def" to be normal
-        
-        Style s1 = his.addStyle("red", normal);//"red" style based on the "normal" style ,add color attribute to the "red" style
-        StyleConstants.setForeground(s1, Color.RED);
-       
-        Style s2 = his.addStyle("blue", normal);
-        StyleConstants.setForeground(s2, Color.BLUE);
-        
         //set background color of the palette
 		palette.setBackground(Color.white);
 		palette.addMouseListener(mousea);//for the press action
@@ -123,13 +100,6 @@ public class DrawGraph {
 		functions.addItem("CoupMatrix");
 		functions.addItem("LaplacMatrix");
 		functions.addActionListener(lma);
-		
-		//History part : show the operations
-		h.setHorizontalAlignment(JLabel.LEFT);
-        his.setParagraphAttributes(normal, true);
-		jcp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		jcp.setPreferredSize(new Dimension(100,100));
-		clear.addActionListener(ba);
 		
 		setGraphCompponents();
 	}
@@ -225,7 +195,7 @@ public class DrawGraph {
 		cons.weightx = 0;
 		graph.add(blank,cons);
 		
-
+/*
 		cons.insets = new Insets(0, 5, 5, 0);
 		cons.gridwidth = 1;
 		cons.gridx = 0;
@@ -243,26 +213,7 @@ public class DrawGraph {
 		cons.weighty = 0;
 		cons.gridwidth = 2;
 		graph.add(clear,cons);
-		
-	}
-	
-	public void printInfo(String info,String type){
-		try {
-			his.getDocument().insertString(his.getDocument().getLength(),
-			         info, his.getStyle(type));//get the history handle and add content to it
-		} catch (BadLocationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	public void printInfo(String info){//default "normal" style
-		try {
-			his.getDocument().insertString(his.getDocument().getLength(),
-			         info, his.getStyle("normal"));
-		} catch (BadLocationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		*/
 	}
 	private class ButtonAction implements ActionListener {//the listeners for buttons
 
@@ -281,7 +232,7 @@ public class DrawGraph {
 						e1.printStackTrace();
 					}
 				}
-				if(label_start > count || label_end > count|| label_start < 1|| label_end < 1) printInfo( "ERROR:<---Beyond Arrange--->\n", "red");
+				if(label_start > count || label_end > count|| label_start < 1|| label_end < 1) DrawNetwork.printInfo( "ERROR:<---Beyond Arrange--->\n", "red");
 				
 				else {
 					Link l = new Link(nodes.getNode(label_start).self,nodes.getNode(label_end).self);
@@ -293,7 +244,7 @@ public class DrawGraph {
 					}
 						links.ls.add(l);
 					String str = "A Link Added: StartAgent: Agent " + label_start +", EndAgent: Agent " + label_end +",Weight: " + w + " ;\n";
-					printInfo(str);
+					DrawNetwork.printInfo(str);
 				}
 			//	repaint();
 			}
@@ -301,7 +252,7 @@ public class DrawGraph {
 				boolean flag = false;
 				int label_start = Integer.parseInt(start.getText());
 				int label_end = Integer.parseInt(end.getText());
-				if(label_start > count || label_end > count|| label_start < 1|| label_end < 1) printInfo("ERROR:<---Beyond Arrange--->\n","red");
+				if(label_start > count || label_end > count|| label_start < 1|| label_end < 1) DrawNetwork.printInfo("ERROR:<---Beyond Arrange--->\n","red");
 				else{
 					for(int i = 0;i<links.ls.size();i++){
 						Link l = links.ls.get(i);
@@ -311,10 +262,10 @@ public class DrawGraph {
 							break;
 						}
 					}
-					if(!flag) printInfo( "Info:No edge to be removed(No such edge in the net)!\n","red");
+					if(!flag) DrawNetwork.printInfo( "Info:No edge to be removed(No such edge in the net)!\n","red");
 					else {
 						//repaint();
-						printInfo( "Info:Unlink an edge!\n","blue");
+						DrawNetwork.printInfo( "Info:Unlink an edge!\n","blue");
 					}
 				}
 			}
@@ -325,11 +276,8 @@ public class DrawGraph {
 					else{
 						net = new DirectedNet("MyNet", nodes.ags, links.ls,Net.DIRECT_NETWORK);
 					}
-					printInfo("A Net has builded!\n"+net.toString()+"\n"+net.print());
+					DrawNetwork.printInfo("A Net has builded!\n"+net.toString()+"\n"+net.print());
 					//repaint();
-			}
-			else if(e.getSource()==clear){
-				his.setText("");
 			}
 			else{
 				System.out.println("--------------");
@@ -360,15 +308,12 @@ public class DrawGraph {
 
 				}
 				//repaint();
-				printInfo(s,"blue");
+				DrawNetwork.printInfo(s,"blue");
 			}
 			}
 		}
 		
 	}
-	
-	
-	
 	private class MouseAction implements MouseListener,MouseMotionListener{
 		@Override
 		public void mouseClicked(MouseEvent e) {
@@ -384,8 +329,7 @@ public class DrawGraph {
 			if(nodes.getNode(x, y)==null){
 				count++;
 				String str = "Agent " + count +" added: x = " + x +",y = " +y + " ;\n";
-				printInfo(str);
-				
+				DrawNetwork.printInfo(str);
 				nodes.ags.add(new Node(x,y,count));
 			}
 			else{
