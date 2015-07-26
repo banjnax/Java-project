@@ -21,6 +21,10 @@
 	  	<artifactId>BaseModules</artifactId>
 	  	<version>0.0.1-SNAPSHOT</version>
 	  </dependency>
+	  <dependency>
+	 	 <groupId>org.jfree</groupId>
+		<artifactId>jfreechart</artifactId>
+	  </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
