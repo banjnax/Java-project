@@ -11,12 +11,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import javax.swing.*;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
 import javax.xml.bind.ValidationException;
 
 import com.banjo.net.basemodules.DirectedNet;
@@ -195,25 +189,6 @@ public class DrawGraph {
 		cons.weightx = 0;
 		graph.add(blank,cons);
 		
-/*
-		cons.insets = new Insets(0, 5, 5, 0);
-		cons.gridwidth = 1;
-		cons.gridx = 0;
-		cons.gridy = 10;
-		graph.add(h,cons);
-		
-		cons.gridx = 0;
-		cons.gridy = 11;
-		cons.gridwidth=3;
-		cons.weighty = 0;
-		graph.add(jcp,cons);
-		
-		cons.gridx = 1;
-		cons.gridy = 12;
-		cons.weighty = 0;
-		cons.gridwidth = 2;
-		graph.add(clear,cons);
-		*/
 	}
 	private class ButtonAction implements ActionListener {//the listeners for buttons
 
@@ -247,6 +222,7 @@ public class DrawGraph {
 					DrawNetwork.printInfo(str);
 				}
 			//	repaint();
+				DrawNetwork.hasDiff = true;
 			}
 			else if(e.getSource() == unlink){//unlink an edge
 				boolean flag = false;
@@ -265,6 +241,7 @@ public class DrawGraph {
 					if(!flag) DrawNetwork.printInfo( "Info:No edge to be removed(No such edge in the net)!\n","red");
 					else {
 						//repaint();
+						DrawNetwork.hasDiff = true;
 						DrawNetwork.printInfo( "Info:Unlink an edge!\n","blue");
 					}
 				}
@@ -278,6 +255,7 @@ public class DrawGraph {
 					}
 					DrawNetwork.printInfo("A Net has builded!\n"+net.toString()+"\n"+net.print());
 					//repaint();
+					DrawNetwork.hasDiff = true;
 			}
 			else{
 				System.out.println("--------------");
@@ -308,6 +286,7 @@ public class DrawGraph {
 
 				}
 				//repaint();
+				DrawNetwork.hasDiff = true;
 				DrawNetwork.printInfo(s,"blue");
 			}
 			}
@@ -337,6 +316,7 @@ public class DrawGraph {
 				n.self_color = Color.orange;
 			}
 			//repaint();
+			DrawNetwork.hasDiff = true;
 		}
 		@Override
 		public void mouseReleased(MouseEvent e) {//add completed or have the node to a better position
@@ -347,6 +327,7 @@ public class DrawGraph {
 				nodes.getNode(x, y).self_color = Color.green;
 			}
 			//repaint();
+			DrawNetwork.hasDiff = true;
 		}
 		@Override
 		public void mouseEntered(MouseEvent e) {
@@ -384,6 +365,7 @@ public class DrawGraph {
 					}
 				}
 				//repaint();
+				DrawNetwork.hasDiff = true;
 			}
 			
 		}

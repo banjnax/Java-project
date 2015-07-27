@@ -53,6 +53,7 @@ public class DrawNetwork extends JFrame{
 	private static int G_X = 400;
 	private static int G_Y = 100;
 	
+	public static boolean hasDiff = false;
 	Image vImage=null;
 	Image offScreenImage = null;
 	Graphics gImage = null;
@@ -105,8 +106,10 @@ public class DrawNetwork extends JFrame{
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				JTabbedPane j = (JTabbedPane)e.getSource();
-				if(j.getSelectedIndex() == 0)
+				if(j.getSelectedIndex() == 0){
 					paintFlag = 0;
+					repaint();
+				}
 				else paintFlag = 1;
 			}
 		});
@@ -226,7 +229,11 @@ public class DrawNetwork extends JFrame{
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			repaint();
+			//compare the different part and repaint that
+			if(hasDiff){
+				repaint();
+				hasDiff = false;
+			}
 		}
 		
 	}
@@ -280,8 +287,8 @@ public class DrawNetwork extends JFrame{
 							while(ita.hasNext()) drawGraph.nodes.ags.add(ita.next());
 							while(itl.hasNext()) drawGraph.links.ls.add(itl.next());
 							printInfo("Info:A net loaded!\n", "blue");
-							repaint();
-							
+							//repaint();
+							DrawNetwork.hasDiff = true;
 						} catch (ClassNotFoundException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
@@ -310,7 +317,8 @@ public class DrawNetwork extends JFrame{
 				drawGraph.links.ls.removeAll(drawGraph.links.ls);
 				drawGraph.nodes.ags.removeAll(drawGraph.nodes.ags);
 				drawGraph.count = 0;
-				repaint();
+				//repaint();
+				DrawNetwork.hasDiff = true;
 				printInfo("Info:The palette is cleared!\n","blue");
 				openFileDialog.setVisible(true);
 				String fileName = openFileDialog.getDirectory()+openFileDialog.getFile();
@@ -370,7 +378,8 @@ public class DrawNetwork extends JFrame{
 		            }
 		            in.close();
 		            printInfo("Info:Data loaded!\n","blue");
-		            repaint();
+		           // repaint();
+		           DrawNetwork.hasDiff = true;
 		        } catch (FileNotFoundException ex) {
 		            ex.printStackTrace();
 		        }
@@ -437,7 +446,8 @@ public class DrawNetwork extends JFrame{
 				drawGraph.nodes.ags.removeAll(drawGraph.nodes.ags);
 				drawGraph.count = 0;
 				printInfo("Info:The palette is cleared!\n","blue");
-				repaint();
+				//repaint();
+				DrawNetwork.hasDiff = true;
 			}
 			else{
 				System.out.println("YOU CAN ADD ANTHER MENU HERE!!");
