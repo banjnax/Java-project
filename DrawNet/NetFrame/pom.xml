@@ -16,6 +16,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <dependencies>
+  	<dependency>
+		<groupId>jdom</groupId>
+		<artifactId>jdom</artifactId>
+	</dependency>
 	  <dependency>
 	  	<groupId>com.banjo.net</groupId>
 	  	<artifactId>BaseModules</artifactId>

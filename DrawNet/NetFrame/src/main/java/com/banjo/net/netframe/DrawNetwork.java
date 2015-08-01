@@ -19,6 +19,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -38,6 +39,13 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
+
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.input.SAXBuilder;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 
 import com.banjo.net.basemodules.Link;
 import com.banjo.net.basemodules.Net;
@@ -61,11 +69,15 @@ public class DrawNetwork extends JFrame{
 	JMenuBar menuBar = new JMenuBar();
 	JMenu file = new JMenu("File");
 	JMenu edit = new JMenu("Edit");
-	JMenuItem _new = new JMenuItem("New");
-	JMenuItem _open = new JMenuItem("Load Net");
-	JMenuItem _loaddata = new JMenuItem("Load Data..");
-	JMenuItem _save = new JMenuItem("Save Net");
-	JMenuItem _savedata = new JMenuItem("Save Data..");
+	JMenuItem _new = new JMenuItem("New Net");
+	JMenu Open = new JMenu("Open..");
+	JMenuItem _loadNet = new JMenuItem("Load Net");
+	JMenuItem _loadData = new JMenuItem("Load Data..");
+	JMenuItem _loadXml = new JMenuItem("Load XML");
+	JMenu Save = new JMenu("Save as ..");
+	JMenuItem _saveNet = new JMenuItem("Net Object");
+	JMenuItem _saveData = new JMenuItem("Net Data..");
+	JMenuItem _saveXml = new JMenuItem("XML File..");
 	JMenuItem _clear = new JMenuItem("Clear Palette");
 	
 	JTabbedPane jtp = new JTabbedPane(JTabbedPane.TOP);//to clear the different faces to the users for different functions presentation
@@ -120,17 +132,29 @@ public class DrawNetwork extends JFrame{
 		
 		//menu part
 		file.add(_new);
-		file.add(_open);
-		file.add(_loaddata);
-		file.add(_save);
-		file.add(_savedata);
+		file.add(Open);
+		Open.add(_loadNet);
+		Open.add(_loadData);
+		Open.add(_loadXml);
+		file.add(Save);
+		Save.add(_saveNet);
+		Save.add(_saveData);
+		Save.add(_saveXml);
+		
 		edit.add(_clear);
+
+
 		_new.addActionListener(ma);
-		_save.addActionListener(ma);
-		_open.addActionListener(ma);
-		_loaddata.addActionListener(ma);
-		_savedata.addActionListener(ma);
+		_saveNet.addActionListener(ma);
+		_saveData.addActionListener(ma);
+		_saveXml.addActionListener(ma);
+		
+		_loadNet.addActionListener(ma);
+		_loadData.addActionListener(ma);
+		_loadXml.addActionListener(ma);
+
 		_clear.addActionListener(ma);
+
 		
 		menuBar.add(file);
 		menuBar.add(edit);
@@ -242,7 +266,7 @@ public class DrawNetwork extends JFrame{
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			if(e.getSource() == _save){//file->save, to save as object
+			if(e.getSource() == _saveNet){//file->save, to save as object
 				saveFileDialog.setVisible(true);
 				String fileName = saveFileDialog.getDirectory()+saveFileDialog.getFile();//open the file select dialog
 				
@@ -270,7 +294,7 @@ public class DrawNetwork extends JFrame{
 		          }
 		           
 			}
-			else if(e.getSource() == _open){//open as object
+			else if(e.getSource() == _loadNet){//open as object
 				openFileDialog.setVisible(true);
 				String fileName = openFileDialog.getDirectory()+openFileDialog.getFile();
 				ObjectInputStream ois = null;
@@ -312,7 +336,7 @@ public class DrawNetwork extends JFrame{
 		                  
 		          }
 			}
-			else if(e.getSource() == _loaddata){//load data that stored in numbers
+			else if(e.getSource() == _loadData){//load data that stored in numbers
 				drawGraph.net = null;
 				drawGraph.links.ls.removeAll(drawGraph.links.ls);
 				drawGraph.nodes.ags.removeAll(drawGraph.nodes.ags);
@@ -385,7 +409,7 @@ public class DrawNetwork extends JFrame{
 		        }
 				
 			}
-			else if(e.getSource() == _savedata){
+			else if(e.getSource() == _saveData){
 	
 				saveFileDialog.setVisible(true);
 				String fileName = saveFileDialog.getDirectory()+saveFileDialog.getFile();//open the file select dialog
@@ -448,6 +472,127 @@ public class DrawNetwork extends JFrame{
 				printInfo("Info:The palette is cleared!\n","blue");
 				//repaint();
 				DrawNetwork.hasDiff = true;
+			}
+			else if(e.getSource() == _saveXml){
+				saveFileDialog.setVisible(true);
+				String fileName = saveFileDialog.getDirectory()+saveFileDialog.getFile();//open the file select dialog
+				fileName+=".xml";
+				Element root = new Element(drawGraph.net.toString());
+				Document doc = new Document(root);
+				ArrayList<Integer> savedNodes = new ArrayList<Integer>();
+				for(int i=0;i<drawGraph.links.ls.size();i++){
+					Link l = drawGraph.links.ls.get(i);
+					Element el = new Element("Link");
+					Element es = new Element("Start").setText(l.label_start+"");
+					Element ee = new Element("End").setText(l.label_end+"");
+					Element ew = new Element("Weight").setText(l.weight+"");
+					Element et = new Element("Type").setText(l.directLink+"");
+					el.addContent(es);
+					el.addContent(ee);
+					el.addContent(ew);
+					el.addContent(et);
+					root.addContent(el);
+					if(!savedNodes.contains(l.label_start)) savedNodes.add(l.label_start);
+					if(!savedNodes.contains(l.label_end)) savedNodes.add(l.label_end);
+				}
+				for(int i=0;i<drawGraph.nodes.ags.size();i++){
+					if(!savedNodes.contains(drawGraph.nodes.ags.get(i).number)){
+						Element el = new Element("Node");
+						Element ep = new Element("Label").setText(drawGraph.nodes.ags.get(i).number+"");
+						el.addContent(ep);
+						root.addContent(el);
+					}
+				}
+				XMLOutputter XMLOut = new XMLOutputter();  
+		        try {  
+		            Format f = Format.getPrettyFormat();  
+		            f.setEncoding("UTF-8");//default=UTF-8  
+		            XMLOut.setFormat(f);  
+		            FileOutputStream fos = new FileOutputStream(fileName);
+		            XMLOut.output(doc, fos);  
+		            fos.close();
+		            DrawNetwork.printInfo("Info:The XML file had been saved! "+fileName+"\n", "blue");
+		        } catch (Exception ep) {  
+		            ep.printStackTrace();  
+		        }  
+			}
+			else if(e.getSource() == _loadXml){
+				drawGraph.net = null;
+				drawGraph.links.ls.removeAll(drawGraph.links.ls);
+				drawGraph.nodes.ags.removeAll(drawGraph.nodes.ags);
+				drawGraph.count = 0;
+				//repaint();
+				DrawNetwork.hasDiff = true;
+				
+				openFileDialog.setVisible(true);
+				String fileName = openFileDialog.getDirectory()+openFileDialog.getFile();;
+				SAXBuilder bulider = new SAXBuilder();
+				try {
+					Document doc = bulider.build(fileName);
+					Element root = doc.getRootElement();
+					List ls = root.getChildren("Link");
+					List ns = root.getChildren("Node");
+					
+					Random r = new Random();
+					int width = drawGraph.palette.getWidth();
+	        		int height = drawGraph.palette.getHeight();
+	        		int e_x,e_y,s_x,s_y;
+	        		Node n1,n2;
+	        		Element nd,lk;
+	        		Link l;
+	        		
+	        		for(int i=0;i<ns.size();i++){//Add node to the nodes
+	        			nd = (Element)ns.get(i);
+	        			e_x = 15+r.nextInt(width-30);
+		        		e_y = 15+r.nextInt(height-50)+drawGraph.W_Y;
+	        			n1 = new Node(e_x, e_y, Integer.parseInt(nd.getChildText("Label")));
+	        			drawGraph.nodes.ags.add(n1);
+	        			drawGraph.count++;
+	        		}
+					for(int i=0;i<ls.size();i++){//Add Links to the links
+						lk = (Element)ls.get(i);
+						
+		        		int start = Integer.parseInt(lk.getChildText("Start"));
+		        		int end = Integer.parseInt(lk.getChildText("End"));
+		        		int weight = Integer.parseInt(lk.getChildText("Weight"));
+		        		String direct = lk.getChildText("Type");
+	        		
+		        		if(!drawGraph.nodes.findNode(start)){
+		        			s_x = 15+r.nextInt(width-30);
+			        		s_y = 15+r.nextInt(height-50)+drawGraph.W_Y;
+		        			n1 = new Node(s_x, s_y, start);
+		        			drawGraph.nodes.ags.add(n1);
+		        			drawGraph.count++;
+		        		}
+		        		if(!drawGraph.nodes.findNode(end)){
+		        			e_x = 15+r.nextInt(width-30);
+			        		e_y = 15+r.nextInt(height-50)+drawGraph.W_Y;
+		        			n2 = new Node(e_x, e_y, end);
+		        			drawGraph.nodes.ags.add(n2);
+		        			drawGraph.count++;
+		        		}
+		        		
+		        		l = new Link(drawGraph.nodes.getNode(start).self, drawGraph.nodes.getNode(end).self);
+		        		l.label_start = start;
+		        		l.label_end = end;
+		        		l.weight = weight;
+		        		if(direct == "True"){
+		        			l.directLink = true;
+		        		}
+		        		if(!drawGraph.links.findLink(start, end))
+		        			drawGraph.links.ls.add(l);
+		        	
+				}
+					DrawNetwork.printInfo("XML Loaded completed!\n", "blue");
+					repaint();
+				} catch (JDOMException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
 			}
 			else{
 				System.out.println("YOU CAN ADD ANTHER MENU HERE!!");
