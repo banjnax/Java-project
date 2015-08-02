@@ -32,7 +32,7 @@ public class Link implements Serializable{
       public   void  paintk(Graphics g,  int  x1,  int  y1,  int  x2,  int  y2)  {
 
          double  H  =   10 ;  //the height of the arrow
-          double  L  =   7 ; //half of the down
+          double  L  =   4 ; //half of the down
           int  x3  =   0 ;
          int  y3  =   0 ;
          int  x4  =   0 ;
@@ -58,9 +58,12 @@ public class Link implements Serializable{
 
          g.drawLine(x1, y1, x2, y2);
 
-         g.drawLine(x2, y2, x3, y3);
+         g.setColor(Color.BLACK);
+         g.fillPolygon(new int[]{x2,x3,x4},new int[]{y2,y3,y4},3);
+         g.setColor(self_color);
+        // g.drawLine(x2, y2, x3, y3);
 
-         g.drawLine(x2, y2, x4, y4);
+        // g.drawLine(x2, y2, x4, y4);
     } 
 
      public   double [] rotateVec( int  px,  int  py,  double  ang,  boolean  isChLen,

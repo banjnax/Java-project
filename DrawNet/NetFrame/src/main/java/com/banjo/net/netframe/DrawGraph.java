@@ -23,6 +23,8 @@ import com.banjo.net.basemodules.UndirectedNet;
 import com.banjo.net.nettools.MatrixFactory;
 
 public class DrawGraph {
+	public static int WIDTH = 648;
+	public static int HEIGHT = 478;
 	Nodes nodes = new Nodes();
 	Links links = new Links();
 	Net net = null;

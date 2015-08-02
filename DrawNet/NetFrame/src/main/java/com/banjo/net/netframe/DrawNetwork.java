@@ -23,12 +23,14 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -69,6 +71,8 @@ public class DrawNetwork extends JFrame{
 	JMenuBar menuBar = new JMenuBar();
 	JMenu file = new JMenu("File");
 	JMenu edit = new JMenu("Edit");
+	JMenu extra = new JMenu("Extra");
+	
 	JMenuItem _new = new JMenuItem("New Net");
 	JMenu Open = new JMenu("Open..");
 	JMenuItem _loadNet = new JMenuItem("Load Net");
@@ -79,7 +83,7 @@ public class DrawNetwork extends JFrame{
 	JMenuItem _saveData = new JMenuItem("Net Data..");
 	JMenuItem _saveXml = new JMenuItem("XML File..");
 	JMenuItem _clear = new JMenuItem("Clear Palette");
-	
+	JMenuItem _bc14ls = new JMenuItem("BC14L Spider");
 	JTabbedPane jtp = new JTabbedPane(JTabbedPane.TOP);//to clear the different faces to the users for different functions presentation
 	
 	JPanel hisPart = new JPanel();
@@ -97,7 +101,12 @@ public class DrawNetwork extends JFrame{
     DrawGraph drawGraph = new DrawGraph();//have the graph handle
     DrawChart drawChart = new DrawChart(drawGraph);
     
+    static BC14LS bcls = null;
     int paintFlag = 0;
+    Image logo = new ImageIcon("E:\\complex.png").getImage();
+    int paletteWidth;
+    int paletteHeight;
+    boolean extraFlag = false;
 	public static void main(String[] args) {
 		new DrawNetwork().launch();
 	}
@@ -110,7 +119,8 @@ public class DrawNetwork extends JFrame{
 		this.setLayout(new BorderLayout());//new GridBagLayout()
 		this.setResizable(false);
 		this.setTitle("NetWork");
-		
+		this.setIconImage(logo);
+
 		setComponent();
 		
 		jtp.addChangeListener(new ChangeListener() {
@@ -127,6 +137,8 @@ public class DrawNetwork extends JFrame{
 		});
 		
 		timer.start();
+		bcls = new BC14LS(this);// "http://www.labcomplex.org/"
+		new Thread(new Crawl()).run();
 	}
 	public void setComponent(){
 		
@@ -143,6 +155,7 @@ public class DrawNetwork extends JFrame{
 		
 		edit.add(_clear);
 
+		extra.add(_bc14ls);
 
 		_new.addActionListener(ma);
 		_saveNet.addActionListener(ma);
@@ -155,9 +168,11 @@ public class DrawNetwork extends JFrame{
 
 		_clear.addActionListener(ma);
 
+		_bc14ls.addActionListener(ma);
 		
 		menuBar.add(file);
 		menuBar.add(edit);
+		menuBar.add(extra);
 		
 		jtp.add(drawGraph.graph,"Graph");
 		jtp.add(drawChart.jchartp,"Chart");
@@ -247,6 +262,9 @@ public class DrawNetwork extends JFrame{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	public static void doCrawling(){
+		bcls.getRelateUrls();
 	}
 	private class TimerAction implements ActionListener{
 		
@@ -594,8 +612,41 @@ public class DrawNetwork extends JFrame{
 				}
 				
 			}
+			if(e.getSource() == _bc14ls){
+				drawGraph.net = null;
+				drawGraph.links.ls.removeAll(drawGraph.links.ls);
+				drawGraph.nodes.ags.removeAll(drawGraph.nodes.ags);
+				drawGraph.count = 0;
+				
+				String url = JOptionPane.showInputDialog("Let's crawling!");
+				if(url!=null){
+					bcls.setURL(url);
+					extraFlag = true;
+				}
+			}
 			else{
 				System.out.println("YOU CAN ADD ANTHER MENU HERE!!");
+			}
+		}
+		
+	}
+	private class Crawl implements Runnable{
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			while(true){
+				try {
+					Thread.sleep(200);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if(extraFlag){
+					doCrawling();
+					extraFlag = false;
+				}
+				
 			}
 		}
 		
