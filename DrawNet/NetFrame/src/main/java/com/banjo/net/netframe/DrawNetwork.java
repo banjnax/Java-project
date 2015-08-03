@@ -10,6 +10,8 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -23,6 +25,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
+import javax.swing.DebugGraphics;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -111,18 +114,24 @@ public class DrawNetwork extends JFrame{
 		new DrawNetwork().launch();
 	}
 	public void launch(){
+		
 		//outline of the frame
 		this.setSize(G_WIDTH,G_HEIGHT);
 		this.setLocation(G_X,G_Y);
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setVisible(true);
-		this.setLayout(new BorderLayout());//new GridBagLayout()
 		this.setResizable(false);
+		//this.setResizable(true);
+		
+		this.setLayout(new BorderLayout());//new GridBagLayout()
+		this.setMinimumSize(new Dimension(G_WIDTH,G_HEIGHT));
 		this.setTitle("NetWork");
 		this.setIconImage(logo);
-
-		setComponent();
+		this.pack();
+		this.addComponentListener(new ResizeListener());
 		
+		setComponent();//we should add the component first, this can mend the pro of resize the frame
+
 		jtp.addChangeListener(new ChangeListener() {
 			
 			@Override
@@ -627,6 +636,34 @@ public class DrawNetwork extends JFrame{
 			else{
 				System.out.println("YOU CAN ADD ANTHER MENU HERE!!");
 			}
+		}
+		
+	}
+	private class ResizeListener implements ComponentListener{
+
+		@Override
+		public void componentResized(ComponentEvent e) {
+			// TODO Auto-generated method stub
+			invalidate();
+			//validate();
+		}
+
+		@Override
+		public void componentMoved(ComponentEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void componentShown(ComponentEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void componentHidden(ComponentEvent e) {
+			// TODO Auto-generated method stub
+			
 		}
 		
 	}
