@@ -345,7 +345,7 @@ public class DrawGraph {
 			int x = e.getX();
 			int y = e.getY()+W_Y;
 			if(nodes.getNode(x, y)!=null){
-				nodes.getNode(x, y).self_color = Color.green;
+				nodes.getNode(x, y).self_color = nodes.getNode(x, y).default_Color;
 			}
 			//repaint();
 			DrawNetwork.hasDiff = true;

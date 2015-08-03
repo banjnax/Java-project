@@ -13,7 +13,7 @@ public class Link implements Serializable{
 	public int label_end;
 	public int weight;
 	public boolean directLink = false;
-	public Color self_color = Color.gray;
+	public Color self_color = Color.LIGHT_GRAY;
 	public Link(Point s,Point e){
 		this.start = new Point(s.x,s.y);
 		this.end = new Point(e.x,e.y);
@@ -25,7 +25,8 @@ public class Link implements Serializable{
 			this.paintk(g, start.x, start.y, end.x, end.y);
 		}
 		g.drawLine(start.x, start.y, end.x, end.y);
-		g.drawString(weight+"", (start.x+end.x)/2, (start.y+end.y)/2);
+		if(weight!=0)
+			g.drawString(weight+"", (start.x+end.x)/2, (start.y+end.y)/2);
 		g.setColor(c);
 	}
 	
@@ -58,7 +59,7 @@ public class Link implements Serializable{
 
          g.drawLine(x1, y1, x2, y2);
 
-         g.setColor(Color.BLACK);
+         g.setColor(Color.white);
          g.fillPolygon(new int[]{x2,x3,x4},new int[]{y2,y3,y4},3);
          g.setColor(self_color);
         // g.drawLine(x2, y2, x3, y3);

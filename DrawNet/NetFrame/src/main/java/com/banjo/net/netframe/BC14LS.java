@@ -130,7 +130,7 @@ public class BC14LS {
     		l = new Link(dn.drawGraph.nodes.getNode(start).self, dn.drawGraph.nodes.getNode(end).self);
     		l.label_start = start;
     		l.label_end = end;
-    		l.weight = 1;
+    		l.weight = 0;
     		l.directLink = true;//all the links are direct edge
     		dn.drawGraph.nodes.getNode(start).outDegreeAdd();
 			dn.drawGraph.nodes.getNode(end).inDegreeAdd();

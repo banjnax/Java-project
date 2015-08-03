@@ -151,41 +151,9 @@ public class FunctionUtils
     	        .setDefaultCookieSpecRegistry(reg)
     	        .setDefaultRequestConfig(requestConfig)
     	        .build();
+    	
     	return httpclient;
-    	
-    	
-    	/*
-    	CloseableHttpClient httpclient = HttpClients.createDefault();   
-    	 // DefaultHttpClient httpClient = new DefaultHttpClient();
-    	  // customer cookie policy, ignore cookie check 
-     	 CookieSpecFactory csf = new CookieSpecFactory() {
-     	     public CookieSpec newInstance(HttpParams params) {
-     	         return new BrowserCompatSpec() {   
-     	             @Override
-     	             public void validate(Cookie cookie, CookieOrigin origin)
-     	             throws MalformedCookieException {
-     	                 // Oh, I am easy
-     	             }
-     	         };
-     	     }
-     	 };
-    	  httpClient.getCookieSpecs().register("easy", csf);
-    	  httpClient.getParams().setParameter(ClientPNames.COOKIE_POLICY, "easy");
-    	        HttpConnectionParams.setConnectionTimeout(httpClient.getParams(), 2000);
-    	        return httpClient;
-    	        
-    	        
-    	        System.out.println("----setContext");
-    	        context = HttpClientContext.create();
-    	        Registry<CookieSpecProvider> registry = RegistryBuilder
-    	            .<CookieSpecProvider> create()
-    	            .register(CookieSpecs.BEST_MATCH, new BestMatchSpecFactory())
-    	            .register(CookieSpecs.BROWSER_COMPATIBILITY,
-    	                new BrowserCompatSpecFactory()).build();
-    	        context.setCookieSpecRegistry(registry);
-    	        context.setCookieStore(cookieStore);
-    	        */
-    	 }
+     }
     	
     /**  
      * get the urls in that html source
@@ -226,7 +194,7 @@ public class FunctionUtils
         String resultHref = null;  
      
         /* absolute path */
-        if (href.startsWith("http://"))  {  
+        if (href.startsWith("http://")||href.startsWith("https://"))  {  
         	if(href.indexOf(topDomain)!=-1)
         		resultHref = href;
         	else resultHref = startUrl;

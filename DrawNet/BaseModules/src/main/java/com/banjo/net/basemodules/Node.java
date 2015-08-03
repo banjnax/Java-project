@@ -11,8 +11,9 @@ public class Node implements Serializable{
 	public String label;
 	public int number;
 	int count=0;
-	public  int size = 30;
-	public Color self_color = Color.green;
+	public  int size = 10;
+	public Color self_color = Color.black;
+	public Color default_Color = Color.black;
 	public int inDgree = 0;
 	public int outDgree = 0;
 	public Node(int x,int y, int s){
@@ -28,7 +29,7 @@ public class Node implements Serializable{
 		Color c =g.getColor();
 		g.setColor(self_color);
 		g.fillOval(self.x-size/2, self.y-size/2, size, size);
-		g.setColor(Color.black);
+		g.setColor(Color.white);
 		g.drawString(label, self.x-3-count*2, self.y+4);
 		g.setColor(c);
 	}
