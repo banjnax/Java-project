@@ -11,7 +11,7 @@ public class Node implements Serializable{
 	public String label;
 	public int number;
 	int count=0;
-	public  int size = 10;
+	public  int size = 20;
 	public Color self_color = Color.black;
 	public Color default_Color = Color.black;
 	public int inDgree = 0;
@@ -42,7 +42,7 @@ public class Node implements Serializable{
 	}
 	public void inDegreeDec(){
 		inDgree--;
-		this.size+=(4*(inDgree/10));//the size increase 4 when the indgree increase 10
+		this.size+=(2*(inDgree/10));//the size increase 4 when the indgree increase 10
 	}
 	public void outDegreeDec(){
 		outDgree--;

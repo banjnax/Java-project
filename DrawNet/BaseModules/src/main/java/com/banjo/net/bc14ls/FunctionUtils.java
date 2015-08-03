@@ -5,7 +5,16 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.Security;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
+import javax.security.cert.CertificateException;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -15,6 +24,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.cookie.CookieOrigin;
 import org.apache.http.cookie.CookieSpec;
@@ -24,7 +34,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.cookie.DefaultCookieSpec;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.TrustStrategy;
 import org.apache.http.util.EntityUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class FunctionUtils  
 {  
@@ -46,6 +59,9 @@ public class FunctionUtils
     	
     	URL u = null;
     	URI uri = null;
+    	boolean ssl = false;
+    	if(url.startsWith("https://")) ssl = true;
+    	
 		try {
 			u = new URL(url);
 		} catch (MalformedURLException e1) {
@@ -58,10 +74,10 @@ public class FunctionUtils
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
-		CloseableHttpClient client = getHttpClient();  
+		//Security.addProvider(new BouncyCastleProvider());
+		CloseableHttpClient client = getHttpClient(ssl);  
         HttpGet getHttp = new HttpGet(uri);  
-        String content = null;  
+        String content = "";  
     
         CloseableHttpResponse response = null;  
         try
@@ -106,7 +122,7 @@ public class FunctionUtils
              
         return content;  
     }  
-    public  static CloseableHttpClient getHttpClient(){
+    public  static CloseableHttpClient getHttpClient(boolean ssl){
     	
     	CookieSpecProvider easySpecProvider = new CookieSpecProvider() {
 
@@ -146,14 +162,78 @@ public class FunctionUtils
     	RequestConfig requestConfig = RequestConfig.custom()
     	        .setCookieSpec("mySpec")
     	        .build();
-
-    	CloseableHttpClient httpclient = HttpClients.custom()
-    	        .setDefaultCookieSpecRegistry(reg)
-    	        .setDefaultRequestConfig(requestConfig)
-    	        .build();
     	
-    	return httpclient;
-     }
+    	if(ssl){
+    		X509TrustManager x509mgr = new X509TrustManager() {
+    	        @Override
+    	        public void checkClientTrusted(X509Certificate[] xcs, String string) {
+    	        }
+    	        @Override
+    	        public void checkServerTrusted(X509Certificate[] xcs, String string) {
+    	        }
+    	        @Override
+    	        public X509Certificate[] getAcceptedIssuers() {
+    	            return null;
+    	        }
+    	    };
+    	 
+    	    SSLContext sslContext = null;
+			try {
+				sslContext = SSLContext.getInstance("TLS");
+			} catch (NoSuchAlgorithmException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	    try {
+				sslContext.init(null, new X509TrustManager[] { x509mgr }, null);
+			} catch (KeyManagementException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	    SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+    	    //SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+            //        sslContext,);
+    	    
+            return HttpClients.custom()
+            		.setSSLSocketFactory(sslsf)
+            		.setDefaultCookieSpecRegistry(reg)
+        	        .setDefaultRequestConfig(requestConfig)
+        	        .build();
+    		/*
+	    	//request https
+	    	try {
+	            SSLContext sslContext = new SSLContextBuilder()
+	                                .loadTrustMaterial(null, new TrustStrategy() {
+	                //trust all
+	                public boolean isTrusted(X509Certificate[] chain,
+	                                String authType) {//throws CertificateException
+	                    return true;
+	                }
+	                    }).build();
+	            SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+	                    sslContext);
+	            return HttpClients.custom()
+	            		.setSSLSocketFactory(sslsf)
+	            		.setDefaultCookieSpecRegistry(reg)
+	        	        .setDefaultRequestConfig(requestConfig)
+	        	        .build();
+	        } catch (KeyManagementException e) {
+	            e.printStackTrace();
+	        } catch (NoSuchAlgorithmException e) {
+	            e.printStackTrace();
+	        } catch (KeyStoreException e) {
+	            e.printStackTrace();
+	        }
+	        return  HttpClients.createDefault();
+	        */
+    	}
+    	else{
+    		return HttpClients.custom()
+            		.setDefaultCookieSpecRegistry(reg)
+        	        .setDefaultRequestConfig(requestConfig)
+        	        .build();
+    	}
+   }
     	
     /**  
      * get the urls in that html source
@@ -194,7 +274,7 @@ public class FunctionUtils
         String resultHref = null;  
      
         /* absolute path */
-        if (href.startsWith("http://")||href.startsWith("https://"))  {  
+        if (href.startsWith("http://")||href.startsWith("https://")){  //
         	if(href.indexOf(topDomain)!=-1)
         		resultHref = href;
         	else resultHref = startUrl;
@@ -203,7 +283,11 @@ public class FunctionUtils
         {  
             /* the relative path inner our website preclude hrefs like a href="#" */
             if (href.startsWith("/")){ 
-	             resultHref = startUrl + href;  
+            	if(!startUrl.endsWith("/"))
+            		resultHref = startUrl + href;
+            	else {
+            		resultHref = startUrl + href.substring(1);
+            	}
             }  
         }  
         return resultHref;  

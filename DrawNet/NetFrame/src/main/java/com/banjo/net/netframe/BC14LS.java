@@ -81,9 +81,9 @@ public class BC14LS {
 			}
 			//String s = stickS(count);
 			//System.out.println("------------------flag="+flag+"-----------------");
-			//System.out.println("------------------Nodes="+vUrls.visited.size()+"-----------------");
+			System.out.println("------------------Nodes="+vUrls.visited.size()+"-----------------");
 			//System.out.println(s+vUrls.visited.get(i));
-			
+
 			temUrls = FunctionUtils.getUrls(vUrls.visited.get(i));
 
 			for(j = 0;j<temUrls.size();j++){
