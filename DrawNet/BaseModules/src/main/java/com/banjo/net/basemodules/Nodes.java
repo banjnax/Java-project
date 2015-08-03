@@ -39,7 +39,7 @@ public class Nodes {
 		Rectangle r1 = null;
 		for(int i=0;i<ags.size();i++){
 			n = ags.get(i);
-			r1 = new Rectangle(n.self.x-15,n.self.y-15,30,30);
+			r1 = new Rectangle(n.self.x-n.size/2,n.self.y-n.size/2,n.size,n.size);
 			if(r1.intersects(r)) return ags.get(i);
 		}
 		return null;

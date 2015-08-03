@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
-import javax.swing.DebugGraphics;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -87,6 +86,7 @@ public class DrawNetwork extends JFrame{
 	JMenuItem _saveXml = new JMenuItem("XML File..");
 	JMenuItem _clear = new JMenuItem("Clear Palette");
 	JMenuItem _bc14ls = new JMenuItem("BC14L Spider");
+	JMenuItem _findWebsit = new JMenuItem("Find Node");
 	JTabbedPane jtp = new JTabbedPane(JTabbedPane.TOP);//to clear the different faces to the users for different functions presentation
 	
 	JPanel hisPart = new JPanel();
@@ -105,7 +105,7 @@ public class DrawNetwork extends JFrame{
     DrawChart drawChart = new DrawChart(drawGraph);
     
     static BC14LS bcls = null;
-    int paintFlag = 0;
+    int paintFlag = 0;//the selected tap
     Image logo = new ImageIcon("E:\\complex.png").getImage();
     int paletteWidth;
     int paletteHeight;
@@ -165,6 +165,7 @@ public class DrawNetwork extends JFrame{
 		edit.add(_clear);
 
 		extra.add(_bc14ls);
+		extra.add(_findWebsit);
 
 		_new.addActionListener(ma);
 		_saveNet.addActionListener(ma);
@@ -178,6 +179,7 @@ public class DrawNetwork extends JFrame{
 		_clear.addActionListener(ma);
 
 		_bc14ls.addActionListener(ma);
+		_findWebsit.addActionListener(ma);
 		
 		menuBar.add(file);
 		menuBar.add(edit);
@@ -304,7 +306,7 @@ public class DrawNetwork extends JFrame{
 							oos.writeObject(drawGraph.net);
 							oos.flush();
 							oos.close();
-							printInfo( "Info:A net saved!"+fileName+".txt\n","red");
+							printInfo( "Info:A net saved!"+fileName+".txt\n","blue");
 						}
 						else{
 							printInfo( "Warning:Nothing saved!\n", "red");
@@ -421,6 +423,14 @@ public class DrawNetwork extends JFrame{
 			        		l.weight = weight;
 			        		if(direct == 1){
 			        			l.directLink = true;
+			        			drawGraph.nodes.getNode(start).outDegreeAdd();
+			        			drawGraph.nodes.getNode(end).inDegreeAdd();
+			        		}
+			        		else{
+			        			drawGraph.nodes.getNode(start).outDegreeAdd();
+			        			drawGraph.nodes.getNode(end).outDegreeAdd();
+			        			drawGraph.nodes.getNode(start).inDegreeAdd();
+			        			drawGraph.nodes.getNode(end).inDegreeAdd();
 			        		}
 			        		
 			        		if(!drawGraph.links.findLink(start, end))
@@ -557,8 +567,8 @@ public class DrawNetwork extends JFrame{
 				try {
 					Document doc = bulider.build(fileName);
 					Element root = doc.getRootElement();
-					List ls = root.getChildren("Link");
-					List ns = root.getChildren("Node");
+					List<?> ls = root.getChildren("Link");
+					List<?> ns = root.getChildren("Node");
 					
 					Random r = new Random();
 					int width = drawGraph.palette.getWidth();
@@ -605,6 +615,14 @@ public class DrawNetwork extends JFrame{
 		        		l.weight = weight;
 		        		if(direct == "True"){
 		        			l.directLink = true;
+		        			drawGraph.nodes.getNode(start).outDegreeAdd();
+		        			drawGraph.nodes.getNode(end).inDegreeAdd();
+		        		}
+		        		if(direct == "False"){
+		        			drawGraph.nodes.getNode(start).outDegreeAdd();
+		        			drawGraph.nodes.getNode(end).outDegreeAdd();
+		        			drawGraph.nodes.getNode(start).inDegreeAdd();
+		        			drawGraph.nodes.getNode(end).inDegreeAdd();
 		        		}
 		        		if(!drawGraph.links.findLink(start, end))
 		        			drawGraph.links.ls.add(l);
@@ -621,7 +639,7 @@ public class DrawNetwork extends JFrame{
 				}
 				
 			}
-			if(e.getSource() == _bc14ls){
+			else if(e.getSource() == _bc14ls){
 				drawGraph.net = null;
 				drawGraph.links.ls.removeAll(drawGraph.links.ls);
 				drawGraph.nodes.ags.removeAll(drawGraph.nodes.ags);
@@ -632,6 +650,17 @@ public class DrawNetwork extends JFrame{
 					bcls.setURL(url);
 					extraFlag = true;
 				}
+			}
+			else if(e.getSource() == _findWebsit){
+				int label=-1;
+				String number;
+				if((number=JOptionPane.showInputDialog(_findWebsit,"Input the Node Label:"))!=null)
+					label = Integer.parseInt(number);
+				String website = bcls.getKeyFrom(label);
+				if(website != null)
+					printInfo("Info: The Website is "+website+" , Enjoy it!\n", "blue");
+				else 
+					printInfo("Error:No Sunch Node that you input!\n", "blue");
 			}
 			else{
 				System.out.println("YOU CAN ADD ANTHER MENU HERE!!");

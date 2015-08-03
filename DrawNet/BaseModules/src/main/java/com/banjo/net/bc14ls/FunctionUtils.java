@@ -8,20 +8,22 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.params.ClientPNames;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.cookie.CookieOrigin;
 import org.apache.http.cookie.CookieSpec;
-import org.apache.http.cookie.CookieSpecFactory;
+import org.apache.http.cookie.CookieSpecProvider;
 import org.apache.http.cookie.MalformedCookieException;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.cookie.BrowserCompatSpec;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.cookie.DefaultCookieSpec;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
 public class FunctionUtils  
@@ -56,12 +58,12 @@ public class FunctionUtils
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-    	
-		HttpClient client = getHttpClient();  
+		
+		CloseableHttpClient client = getHttpClient();  
         HttpGet getHttp = new HttpGet(uri);  
         String content = null;  
     
-        HttpResponse response;  
+        CloseableHttpResponse response = null;  
         try
         {  
             /*get the loader of content*/
@@ -86,13 +88,75 @@ public class FunctionUtils
             e.printStackTrace();  
         } finally  
         {  
-            client.getConnectionManager().shutdown();  
+            if(client!=null)
+				try {
+					client.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+            if(response!=null)
+				try {
+					response.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
         }  
              
         return content;  
     }  
-    public  static HttpClient getHttpClient(){
-    	  DefaultHttpClient httpClient = new DefaultHttpClient();
+    public  static CloseableHttpClient getHttpClient(){
+    	
+    	CookieSpecProvider easySpecProvider = new CookieSpecProvider() {
+
+    	    public CookieSpec create(HttpContext context) {
+
+    	        return new DefaultCookieSpec() {
+    	            @Override
+    	            public void validate(Cookie cookie, CookieOrigin origin)
+    	                    throws MalformedCookieException {
+    	                // Oh, I am easy
+    	            }
+    	        };
+    	    }
+
+    	};
+    	Registry<CookieSpecProvider> reg = RegistryBuilder.<CookieSpecProvider>create()
+    	        .register(CookieSpecs.DEFAULT,
+    	            new CookieSpecProvider() {
+						@Override
+						public CookieSpec create(HttpContext arg0) {
+							// TODO Auto-generated method stub
+							return null;
+						}
+					})
+    	        .register(CookieSpecs.DEFAULT,
+    	            new CookieSpecProvider() {
+						
+						@Override
+						public CookieSpec create(HttpContext arg0) {
+							// TODO Auto-generated method stub
+							return null;
+						}
+					})
+    	        .register("mySpec", easySpecProvider)
+    	        .build();
+
+    	RequestConfig requestConfig = RequestConfig.custom()
+    	        .setCookieSpec("mySpec")
+    	        .build();
+
+    	CloseableHttpClient httpclient = HttpClients.custom()
+    	        .setDefaultCookieSpecRegistry(reg)
+    	        .setDefaultRequestConfig(requestConfig)
+    	        .build();
+    	return httpclient;
+    	
+    	
+    	/*
+    	CloseableHttpClient httpclient = HttpClients.createDefault();   
+    	 // DefaultHttpClient httpClient = new DefaultHttpClient();
     	  // customer cookie policy, ignore cookie check 
      	 CookieSpecFactory csf = new CookieSpecFactory() {
      	     public CookieSpec newInstance(HttpParams params) {
@@ -109,6 +173,18 @@ public class FunctionUtils
     	  httpClient.getParams().setParameter(ClientPNames.COOKIE_POLICY, "easy");
     	        HttpConnectionParams.setConnectionTimeout(httpClient.getParams(), 2000);
     	        return httpClient;
+    	        
+    	        
+    	        System.out.println("----setContext");
+    	        context = HttpClientContext.create();
+    	        Registry<CookieSpecProvider> registry = RegistryBuilder
+    	            .<CookieSpecProvider> create()
+    	            .register(CookieSpecs.BEST_MATCH, new BestMatchSpecFactory())
+    	            .register(CookieSpecs.BROWSER_COMPATIBILITY,
+    	                new BrowserCompatSpecFactory()).build();
+    	        context.setCookieSpecRegistry(registry);
+    	        context.setCookieStore(cookieStore);
+    	        */
     	 }
     	
     /**  
@@ -120,17 +196,19 @@ public class FunctionUtils
         String[] contents = content.split("<a href=\""); 
         for (int i = 1; i < contents.length; i++){
 	        	int endHref = contents[i].indexOf("\"");  
-	            String aHref = getHrefOfInOut(contents[i].substring(  
-	                    0, endHref));  
-	            if (aHref != null)  
-	            {  
-	                String href = getHrefOfInOut(aHref);
-	                if(!urls.contains(href)) urls.add(href);
-	    
-//	                if (!vUrls.visited.contains(href)){  
-//	                    vUrls.visited.add(href);  
-//	                }  
-	            }  
+	        	if(endHref!=-1){
+		            String aHref = getHrefOfInOut(contents[i].substring(  
+		                    0, endHref));  
+		            if (aHref != null)  
+		            {  
+		                String href = getHrefOfInOut(aHref);
+		                if(!urls.contains(href)) urls.add(href);
+		    
+//		                if (!vUrls.visited.contains(href)){  
+//		                    vUrls.visited.add(href);  
+//		                }  
+		            } 
+	        	}
         }  
         return urls;
     }  

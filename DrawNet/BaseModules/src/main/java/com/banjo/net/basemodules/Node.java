@@ -11,8 +11,10 @@ public class Node implements Serializable{
 	public String label;
 	public int number;
 	int count=0;
-	public static int size = 30;
+	public  int size = 30;
 	public Color self_color = Color.green;
+	public int inDgree = 0;
+	public int outDgree = 0;
 	public Node(int x,int y, int s){
 		this.self = new Point(x,y);
 		this.label = s+"";
@@ -29,5 +31,19 @@ public class Node implements Serializable{
 		g.setColor(Color.black);
 		g.drawString(label, self.x-3-count*2, self.y+4);
 		g.setColor(c);
+	}
+	public void inDegreeAdd(){
+		inDgree++;
+		this.size+=(4*(inDgree/10));//the size increase 4 when the indgree increase 10
+	}
+	public void outDegreeAdd(){
+		outDgree++;
+	}
+	public void inDegreeDec(){
+		inDgree--;
+		this.size+=(4*(inDgree/10));//the size increase 4 when the indgree increase 10
+	}
+	public void outDegreeDec(){
+		outDgree--;
 	}
 }

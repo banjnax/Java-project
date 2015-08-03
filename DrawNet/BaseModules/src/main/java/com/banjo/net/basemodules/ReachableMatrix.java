@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 public class ReachableMatrix extends BaseMatrix{
 
+	private static final long serialVersionUID = 1L;
 	public ArrayList<Link> links;
 	public ReachableMatrix(int row,int col, ArrayList<Link> links){
 		super(row,col);

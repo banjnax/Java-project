@@ -218,6 +218,14 @@ public class DrawGraph {
 					l.weight = w;
 					if(direct.isSelected()){
 						l.directLink = true;//the signal of direct link to be marked, the default settins is undirect
+						nodes.getNode(label_start).outDegreeAdd();
+	        			nodes.getNode(label_end).inDegreeAdd();
+					}
+					else{
+						nodes.getNode(label_start).outDegreeAdd();
+	        			nodes.getNode(label_end).outDegreeAdd();
+	        			nodes.getNode(label_start).inDegreeAdd();
+	        			nodes.getNode(label_end).inDegreeAdd();
 					}
 						links.ls.add(l);
 					String str = "A Link Added: StartAgent: Agent " + label_start +", EndAgent: Agent " + label_end +",Weight: " + w + " ;\n";
@@ -227,7 +235,7 @@ public class DrawGraph {
 				DrawNetwork.hasDiff = true;
 			}
 			else if(e.getSource() == unlink){//unlink an edge
-				boolean flag = false;
+				boolean flag = false,direct = true;
 				int label_start = Integer.parseInt(start.getText());
 				int label_end = Integer.parseInt(end.getText());
 				if(label_start > count || label_end > count|| label_start < 1|| label_end < 1) DrawNetwork.printInfo("ERROR:<---Beyond Arrange--->\n","red");
@@ -235,6 +243,7 @@ public class DrawGraph {
 					for(int i = 0;i<links.ls.size();i++){
 						Link l = links.ls.get(i);
 						if(l.label_start==label_start && l.label_end==label_end){
+							direct = l.directLink;
 							links.ls.remove(i);
 							flag = true;
 							break;
@@ -242,6 +251,16 @@ public class DrawGraph {
 					}
 					if(!flag) DrawNetwork.printInfo( "Info:No edge to be removed(No such edge in the net)!\n","red");
 					else {
+						if(direct){
+							nodes.getNode(label_start).outDegreeDec();
+		        			nodes.getNode(label_end).inDegreeDec();
+						}
+						else{
+							nodes.getNode(label_start).outDegreeDec();
+		        			nodes.getNode(label_end).outDegreeDec();
+		        			nodes.getNode(label_start).inDegreeDec();
+		        			nodes.getNode(label_end).inDegreeDec();
+						}
 						//repaint();
 						DrawNetwork.hasDiff = true;
 						DrawNetwork.printInfo( "Info:Unlink an edge!\n","blue");
@@ -255,7 +274,7 @@ public class DrawGraph {
 					else{
 						net = new DirectedNet("MyNet", nodes.ags, links.ls,Net.DIRECT_NETWORK);
 					}
-					DrawNetwork.printInfo("A Net has builded!\n"+net.toString()+"\n"+net.print());
+					DrawNetwork.printInfo("A Net has builded!\n"+net.toString()+"\n");//+net.print()
 					//repaint();
 					DrawNetwork.hasDiff = true;
 			}
@@ -352,10 +371,10 @@ public class DrawGraph {
 				Node n = nodes.getNode(x, y);
 				n.self.x = x;
 				n.self.y = y;
-				if(x - Node.size/2 <0) n.self.x = Node.size/2;
-				if(x+Node.size/2 > palette.getWidth()) n.self.x = palette.getWidth() - Node.size/2;
-				if(y - Node.size/2 - W_Y <0) n.self.y = Node.size/2 + W_Y;
-				if(y + Node.size/2 > palette.getHeight()+W_Y) n.self.y = palette.getHeight()+ W_Y - Node.size/2;
+				if(x - n.size/2 <0) n.self.x = n.size/2;
+				if(x+n.size/2 > palette.getWidth()) n.self.x = palette.getWidth() - n.size/2;
+				if(y - n.size/2 - W_Y <0) n.self.y = n.size/2 + W_Y;
+				if(y + n.size/2 > palette.getHeight()+W_Y) n.self.y = palette.getHeight()+ W_Y - n.size/2;
 				for(int i=0;i<links.ls.size();i++){
 					if(links.ls.get(i).label_start == n.number){
 						links.ls.get(i).start.x = x;

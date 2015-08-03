@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class AdjacentMatrix extends BaseMatrix{
+
+	private static final long serialVersionUID = 1L;
 	public int type;
 	public ArrayList<Link> links;
 	public AdjacentMatrix(int row,int col, ArrayList<Link> links,int type){

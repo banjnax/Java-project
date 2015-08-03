@@ -2,6 +2,7 @@ package com.banjo.net.netframe;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,20 +53,30 @@ public class BC14LS {
 		addNode();
 		FunctionUtils.startUrl = startUrl;
 		FunctionUtils.topDomain = topDomain;
-		dn.paintFlag = 0;
+		DrawNetwork.hasDiff = true;
+	}
+	public String getKeyFrom(int value){
+		Iterator<String> it = mapNodes.keySet().iterator();
+		String key = "";
+		while(it.hasNext()){
+			key = it.next();
+			if(mapNodes.get(key) == value) return key;
+		}
+		return null;
 	}
 	/**
 	 * get the whole url that related with the domain
 	 */
 	public  void getRelateUrls(){
-		
+		long t1=System.currentTimeMillis();
 		int flag = vUrls.visited.size();
-		int count = 0,j=0,start,end;
+		int j=0,start,end;
+		//int count = 0;
 		ArrayList<String> temUrls = null;
 		for(int i = 0;i<vUrls.visited.size();i++){
 			
 			if((--flag)==0){
-				count++;
+			//	count++;
 				flag = vUrls.visited.size();
 			}
 			//String s = stickS(count);
@@ -94,10 +105,11 @@ public class BC14LS {
 			vUrls.visited.remove(i);//as we use that link already, so he can piss out or the array
 			i--;
 		}
-		dn.paintFlag = 1;
+		DrawNetwork.hasDiff = false;
 		String str = "Info: Crawling Over!\n"+"Info: "+
-				dn.drawGraph.nodes.ags.size()+" added and "+dn.drawGraph.links.ls.size()+"added!\n";
+				dn.drawGraph.nodes.ags.size()+" nodes  added and "+dn.drawGraph.links.ls.size()+" links added!\n";
 		DrawNetwork.printInfo(str,"red");
+		System.out.println("Cost Time: "+ (System.currentTimeMillis()-t1)/1000 + "!");
 	}
 	public void addNode(){
 		int e_x,e_y;
@@ -120,7 +132,8 @@ public class BC14LS {
     		l.label_end = end;
     		l.weight = 1;
     		l.directLink = true;//all the links are direct edge
-    		
+    		dn.drawGraph.nodes.getNode(start).outDegreeAdd();
+			dn.drawGraph.nodes.getNode(end).inDegreeAdd();
     		if(!dn.drawGraph.links.findLink(start, end))
     			dn.drawGraph.links.ls.add(l);
 		}
