@@ -10,6 +10,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.net.ssl.SSLContext;
 
@@ -52,7 +53,7 @@ public class FunctionUtils
      * @param url  
      * @return  
      */
-    public static String getContentFrom(String url)  
+    private static String getContentFrom(String url)  
     {  
     	
     	URL u = null;
@@ -118,7 +119,7 @@ public class FunctionUtils
 			e.printStackTrace();
 		 }
     }
-    public  static CloseableHttpClient getHttpClient(){
+    private static CloseableHttpClient getHttpClient(){
     	
     	CookieSpecProvider easySpecProvider = new CookieSpecProvider() {
 
@@ -164,7 +165,7 @@ public class FunctionUtils
         	        .setDefaultRequestConfig(requestConfig)
         	        .build();
    }
-   public static CloseableHttpClient getHttpClientWithSSL(){
+   private static CloseableHttpClient getHttpClientWithSSL(){
    	
    	CookieSpecProvider easySpecProvider = new CookieSpecProvider() {
 
@@ -233,10 +234,11 @@ public class FunctionUtils
     /**  
      * get the urls in that html source
      */
-    public static ArrayList<String> getHrefIn(String content){  
+    private static ArrayList<String> getHrefIn(String content){  
     	ArrayList<String> urls = new ArrayList<String>();
        // System.out.println("begin");  
-        String[] contents = content.split("<a href=\""); 
+       // String[] contents = content.split("<a href=\""); 
+    	String[] contents = splitTextAll(content, "<a href=\"");
         for (int i = 1; i < contents.length; i++){
 	        	int endHref = contents[i].indexOf("\"");  
 	        	if(endHref!=-1){
@@ -255,7 +257,31 @@ public class FunctionUtils
         }  
         return urls;
     }  
-    
+    private static String[] splitTextAll(String line,String splitText)
+	{
+		int length = splitText.length();
+		List<String> arr = new ArrayList<String>();
+	
+		int positionStart = - length;
+		int positionend = line.indexOf(splitText);
+	
+		while (positionend>=0)
+		{
+			positionend = line.indexOf(splitText, positionStart + length);
+			if(positionend==-1)
+			{
+			break;
+			}
+		
+			arr.add(line.substring(positionStart + length, positionend));	
+			positionStart = positionend;
+		
+		}
+		
+		arr.add(line.substring(positionStart + length));
+		
+		return arr.toArray(new String[arr.size()]);
+	}
     /**  
      * trans to the formal format
      * as we know ,there are two kinds of urls , one for the inner of the website, that url use the relative path link /xx/..
@@ -264,7 +290,7 @@ public class FunctionUtils
      * @param href  
      * @return  
      */
-    public static String getHrefOfInOut(String href)  
+    private static String getHrefOfInOut(String href)  
     {  
         String resultHref = null;  
      
