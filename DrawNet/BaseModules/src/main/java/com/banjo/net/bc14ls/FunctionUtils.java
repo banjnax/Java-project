@@ -8,13 +8,10 @@ import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
-import javax.security.cert.CertificateException;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -25,6 +22,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.cookie.CookieOrigin;
 import org.apache.http.cookie.CookieSpec;
@@ -35,9 +33,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.cookie.DefaultCookieSpec;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.TrustStrategy;
 import org.apache.http.util.EntityUtils;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class FunctionUtils  
 {  
@@ -74,7 +70,6 @@ public class FunctionUtils
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		//Security.addProvider(new BouncyCastleProvider());
 		CloseableHttpClient client = getHttpClient(ssl);  
         HttpGet getHttp = new HttpGet(uri);  
         String content = "";  
@@ -164,46 +159,10 @@ public class FunctionUtils
     	        .build();
     	
     	if(ssl){
-    		X509TrustManager x509mgr = new X509TrustManager() {
-    	        @Override
-    	        public void checkClientTrusted(X509Certificate[] xcs, String string) {
-    	        }
-    	        @Override
-    	        public void checkServerTrusted(X509Certificate[] xcs, String string) {
-    	        }
-    	        @Override
-    	        public X509Certificate[] getAcceptedIssuers() {
-    	            return null;
-    	        }
-    	    };
-    	 
-    	    SSLContext sslContext = null;
-			try {
-				sslContext = SSLContext.getInstance("TLS");
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    	    try {
-				sslContext.init(null, new X509TrustManager[] { x509mgr }, null);
-			} catch (KeyManagementException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    	    SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-    	    //SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
-            //        sslContext,);
-    	    
-            return HttpClients.custom()
-            		.setSSLSocketFactory(sslsf)
-            		.setDefaultCookieSpecRegistry(reg)
-        	        .setDefaultRequestConfig(requestConfig)
-        	        .build();
-    		/*
 	    	//request https
 	    	try {
 	            SSLContext sslContext = new SSLContextBuilder()
-	                                .loadTrustMaterial(null, new TrustStrategy() {
+	                                .loadTrustMaterial(null, new TrustSelfSignedStrategy() {
 	                //trust all
 	                public boolean isTrusted(X509Certificate[] chain,
 	                                String authType) {//throws CertificateException
@@ -225,7 +184,7 @@ public class FunctionUtils
 	            e.printStackTrace();
 	        }
 	        return  HttpClients.createDefault();
-	        */
+	     
     	}
     	else{
     		return HttpClients.custom()
