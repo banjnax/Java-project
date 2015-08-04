@@ -37,9 +37,11 @@ import org.apache.http.util.EntityUtils;
 
 public class FunctionUtils  
 {  
-
 	public static String startUrl = "";
 	public static String topDomain = "";
+	public static CloseableHttpClient usedClient = null;
+	public static CloseableHttpClient clientWithoutSSL = getHttpClient();//it can be held until the program exited
+	public static CloseableHttpClient clientWithSSL = getHttpClientWithSSL();//it can be held until the program exited
 	public static ArrayList<String> getUrls(String url){
 		return getHrefIn(getContentFrom(url));
 		//vUrls.print();
@@ -55,10 +57,9 @@ public class FunctionUtils
     	
     	URL u = null;
     	URI uri = null;
-    	boolean ssl = false;
-    	if(url.startsWith("https://")) ssl = true;
-    	
-		try {
+    	if(usedClient==null)
+    		usedClient = clientWithSSL;
+    	try {
 			u = new URL(url);
 		} catch (MalformedURLException e1) {
 			// TODO Auto-generated catch block
@@ -70,7 +71,6 @@ public class FunctionUtils
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		CloseableHttpClient client = getHttpClient(ssl);  
         HttpGet getHttp = new HttpGet(uri);  
         String content = "";  
     
@@ -78,11 +78,9 @@ public class FunctionUtils
         try
         {  
             /*get the loader of content*/
-            response = client.execute(getHttp);  
+            response = usedClient.execute(getHttp);  
             HttpEntity entity = response.getEntity();
             
-//            if(!vUrls.visited.contains(url)) vUrls.visited.add(url);
-
             if (entity != null)  
             {  
                 /* trans to string*/
@@ -93,19 +91,13 @@ public class FunctionUtils
     
         } catch (ClientProtocolException e)  
         {  
+        	System.out.println("ERROR URL:"+url);
             e.printStackTrace();  
         } catch (IOException e)  
-        {  
+        {  System.out.println("ERROR URL:"+url);
             e.printStackTrace();  
         } finally  
         {  
-            if(client!=null)
-				try {
-					client.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
             if(response!=null)
 				try {
 					response.close();
@@ -114,10 +106,19 @@ public class FunctionUtils
 					e.printStackTrace();
 				}
         }  
-             
         return content;  
     }  
-    public  static CloseableHttpClient getHttpClient(boolean ssl){
+    public static void closeHttpClient(){
+    	
+	  if(usedClient!=null)
+		 try {
+		 	usedClient.close();
+		 } catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		 }
+    }
+    public  static CloseableHttpClient getHttpClient(){
     	
     	CookieSpecProvider easySpecProvider = new CookieSpecProvider() {
 
@@ -158,7 +159,51 @@ public class FunctionUtils
     	        .setCookieSpec("mySpec")
     	        .build();
     	
-    	if(ssl){
+    		return HttpClients.custom()
+            		.setDefaultCookieSpecRegistry(reg)
+        	        .setDefaultRequestConfig(requestConfig)
+        	        .build();
+   }
+   public static CloseableHttpClient getHttpClientWithSSL(){
+   	
+   	CookieSpecProvider easySpecProvider = new CookieSpecProvider() {
+
+   	    public CookieSpec create(HttpContext context) {
+
+   	        return new DefaultCookieSpec() {
+   	            @Override
+   	            public void validate(Cookie cookie, CookieOrigin origin)
+   	                    throws MalformedCookieException {
+   	                // Oh, I am easy
+   	            }
+   	        };
+   	    }
+
+   	};
+   	Registry<CookieSpecProvider> reg = RegistryBuilder.<CookieSpecProvider>create()
+   	        .register(CookieSpecs.DEFAULT,
+   	            new CookieSpecProvider() {
+						@Override
+						public CookieSpec create(HttpContext arg0) {
+							// TODO Auto-generated method stub
+							return null;
+						}
+					})
+   	        .register(CookieSpecs.DEFAULT,
+   	            new CookieSpecProvider() {
+						
+						@Override
+						public CookieSpec create(HttpContext arg0) {
+							// TODO Auto-generated method stub
+							return null;
+						}
+					})
+   	        .register("mySpec", easySpecProvider)
+   	        .build();
+
+   	RequestConfig requestConfig = RequestConfig.custom()
+   	        .setCookieSpec("mySpec")
+   	        .build();
 	    	//request https
 	    	try {
 	            SSLContext sslContext = new SSLContextBuilder()
@@ -184,16 +229,7 @@ public class FunctionUtils
 	            e.printStackTrace();
 	        }
 	        return  HttpClients.createDefault();
-	     
-    	}
-    	else{
-    		return HttpClients.custom()
-            		.setDefaultCookieSpecRegistry(reg)
-        	        .setDefaultRequestConfig(requestConfig)
-        	        .build();
-    	}
-   }
-    	
+  } 
     /**  
      * get the urls in that html source
      */
