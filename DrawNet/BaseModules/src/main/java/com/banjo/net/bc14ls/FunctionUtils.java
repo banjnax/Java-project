@@ -43,6 +43,8 @@ public class FunctionUtils
 	public static CloseableHttpClient usedClient = null;
 	public static CloseableHttpClient clientWithoutSSL = getHttpClient();//it can be held until the program exited
 	public static CloseableHttpClient clientWithSSL = getHttpClientWithSSL();//it can be held until the program exited
+	private static int[] next = next("<a href=\"".toCharArray());
+	
 	public static ArrayList<String> getUrls(String url){
 		return getHrefIn(getContentFrom(url));
 		//vUrls.print();
@@ -238,9 +240,10 @@ public class FunctionUtils
     	ArrayList<String> urls = new ArrayList<String>();
        // System.out.println("begin");  
     	long t1=System.currentTimeMillis();
-        //String[] contents = content.split("<a href=\""); 
-    	String[] contents = splitTextAll(content, "<a href=\"");
+        String[] contents = content.split("<a href=\""); 
+    	//String[] contents = splitTextAll(content, "<a href=\"");
     	//String[] contents = sundaySplit(content, "<a href=\"");
+    	//String[] contents = KMPSplit(content, "<a href=\"");
     	System.out.println("Cost Time: "+ (System.currentTimeMillis()-t1) + "!");
         for (int i = 1; i < contents.length; i++){
 	        	int endHref = contents[i].indexOf("\"");  
@@ -259,6 +262,55 @@ public class FunctionUtils
 	        	}
         }  
         return urls;
+    }  
+    private static String[] KMPSplit(String text,String sep){
+		ArrayList<String> str = new ArrayList<String>();
+		int index = 0;
+		int len = sep.length();
+		while((index=KMP_Index(text.toCharArray(),sep.toCharArray()))!=-1){
+			str.add(text.substring(0, index));
+			text = text.substring(index +len);
+		}
+		str.add(text);
+       // for(int i=0;i<str.size();i++) System.out.println(str.get(i));
+		return str.toArray(new String[str.size()]);
+		
+	}
+    private static int KMP_Index(char[] s, char[] t) {    
+        int i = 0;  
+        int j = 0;  
+        while (i <= s.length - 1 && j <= t.length - 1) {  
+            if (j == -1 || s[i] == t[j]) {  
+                i++;  
+                j++;  
+            } else {  
+                j = next[j];  
+            }  
+        }  
+        if (j < t.length) {  
+            return -1;  
+        } else  
+            return i - t.length; 
+    }
+    private static int[] next(char[] t) {  
+        int[] next = new int[t.length];  
+        next[0] = -1;  
+        int i = 0;  
+        int j = -1;  
+        while (i < t.length - 1) {  
+            if (j == -1 || t[i] == t[j]) {  
+                i++;  
+                j++;  
+                if (t[i] != t[j]) {  
+                    next[i] = j;  
+                } else {  
+                    next[i] = next[j];  
+                }  
+            } else {  
+                j = next[j];  
+            }  
+        }  
+        return next;  
     }  
     private static String[] sundaySplit(String text, String sep){
 		
