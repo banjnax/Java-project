@@ -237,8 +237,11 @@ public class FunctionUtils
     private static ArrayList<String> getHrefIn(String content){  
     	ArrayList<String> urls = new ArrayList<String>();
        // System.out.println("begin");  
-       // String[] contents = content.split("<a href=\""); 
+    	long t1=System.currentTimeMillis();
+        //String[] contents = content.split("<a href=\""); 
     	String[] contents = splitTextAll(content, "<a href=\"");
+    	//String[] contents = sundaySplit(content, "<a href=\"");
+    	System.out.println("Cost Time: "+ (System.currentTimeMillis()-t1) + "!");
         for (int i = 1; i < contents.length; i++){
 	        	int endHref = contents[i].indexOf("\"");  
 	        	if(endHref!=-1){
@@ -257,6 +260,71 @@ public class FunctionUtils
         }  
         return urls;
     }  
+    private static String[] sundaySplit(String text, String sep){
+		
+		ArrayList<String> str = new ArrayList<String>();
+		int tPos = 0,i=0;
+		int sPos = 0;
+		int tL = text.length();
+		int sL = sep.length();
+		int temPos = 0;
+		while(tPos<tL-2*sL){
+			if(text.charAt(tPos)!=sep.charAt(sPos)){
+				if(text.charAt(tPos+sL)==sep.charAt(sL-1)){
+					for(i=sL-2;i>=0;i--){
+						if(text.charAt(tPos+i+1)==sep.charAt(i)){
+							if(i==0){
+								//System.out.println("find one!12");
+								str.add(text.substring(temPos, tPos+1));
+								tPos = tPos + sL+1;
+								temPos = tPos;
+								sPos = 0;
+							}
+							else continue;
+						}
+						else{
+							tPos = tPos + sL+1;
+							sPos = 0;
+							break;
+						}
+					}
+				}
+				else{
+					tPos++;
+					sPos = 0;
+				}
+				
+			}
+			else{
+				tPos++;
+				sPos++;
+				for(;sPos<sL;sPos++){
+					if(text.charAt(tPos)==sep.charAt(sPos)){
+						if(sPos == sL-1){
+							//System.out.println("find one!13");
+							if((temPos-1)==(tPos-sL)) str.add("");
+							else str.add(text.substring(temPos, tPos - sL+1));
+							tPos++;
+							temPos = tPos;
+							break;
+						}
+						else{
+							tPos++;
+						}
+					}
+					else{
+						tPos = tPos - sPos +1;
+						break;
+					}
+				}
+				sPos = 0;
+			}
+		}
+		str.add(text.substring(temPos));
+		//for(i=0;i<str.size();i++) System.out.println(str.get(i));
+		
+		return str.toArray(new String[str.size()]); 
+    }
     private static String[] splitTextAll(String line,String splitText)
 	{
 		int length = splitText.length();
